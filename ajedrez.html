@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ajedrez Psicodélico</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a0a0a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Georgia', serif;
+    color: #f0e0d0;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 2rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #ff3333;
+    text-shadow: 0 0 20px #ff000088;
+    margin-bottom: 10px;
+  }
+
+  #status {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    min-height: 1.5em;
+    color: #ffdddd;
+    letter-spacing: 0.05em;
+  }
+
+  #status .white-turn { color: #ffffff; text-shadow: 0 0 8px #fff; }
+  #status .black-turn { color: #ff4444; text-shadow: 0 0 8px #ff0000; }
+  #status .check { color: #ffaa00; font-weight: bold; }
+  #status .checkmate { color: #ff0000; font-weight: bold; font-size: 1.4rem; }
+
+  #board-container {
+    position: relative;
+    width: 640px;
+    height: 640px;
+    cursor: pointer;
+  }
+
+  #board-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 640px;
+    height: 640px;
+  }
+
+  #pieces-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 640px;
+    height: 640px;
+    pointer-events: none;
+  }
+
+  #overlay-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 640px;
+    height: 640px;
+  }
+
+  #controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 16px;
+  }
+
+  button {
+    background: #2a0000;
+    color: #ff5555;
+    border: 1px solid #ff3333;
+    padding: 10px 24px;
+    font-size: 1rem;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  button:hover {
+    background: #ff3333;
+    color: #fff;
+    box-shadow: 0 0 15px #ff000088;
+  }
+
+  #captured {
+    margin-top: 12px;
+    display: flex;
+    gap: 30px;
+    font-size: 1.5rem;
+  }
+
+  #captured div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  #captured label { font-size: 0.75rem; letter-spacing: 0.1em; color: #aa8888; }
+</style>
+</head>
+<body>
+
+<h1>&#9822; Ajedrez Psicodélico &#9812;</h1>
+<div id="status"></div>
+
+<div id="board-container">
+  <svg id="board-svg" viewBox="0 0 640 640" xmlns="http://www.w3.org/2000/svg"></svg>
+  <canvas id="pieces-canvas" width="640" height="640"></canvas>
+  <canvas id="overlay-canvas" width="640" height="640"></canvas>
+</div>
+
+<div id="controls">
+  <button onclick="resetGame()">Nueva Partida</button>
+</div>
+
+<div id="captured">
+  <div><label>Blancas capturadas</label><span id="cap-white"></span></div>
+  <div><label>Negras capturadas</label><span id="cap-black"></span></div>
+</div>
+
+<script>
+// ─── BOARD GEOMETRY ───────────────────────────────────────────────────────────
+// We build a warp mesh: for each of the 9x9 grid corners (col 0-8, row 0-8),
+// compute a displaced (x,y) in SVG space, creating the wavy illusion.
+// Pieces are drawn at the center of each warped cell.
+
+const SIZE = 640;
+const N = 8;
+
+function warpPoint(col, row) {
+  // Base grid position
+  const bx = (col / N) * SIZE;
+  const by = (row / N) * SIZE;
+
+  // Layered sine waves to create the swirling pattern
+  const freq1 = 1.5, freq2 = 2.3, freq3 = 0.8;
+  const amp1 = 28, amp2 = 18, amp3 = 22;
+
+  const nx = col / N, ny = row / N;
+
+  const dx = amp1 * Math.sin(freq1 * Math.PI * ny + 0.3)
+           + amp2 * Math.cos(freq2 * Math.PI * nx - 0.8)
+           + amp3 * Math.sin(freq3 * Math.PI * (nx + ny) + 1.2);
+
+  const dy = amp1 * Math.cos(freq1 * Math.PI * nx + 0.7)
+           + amp2 * Math.sin(freq2 * Math.PI * ny + 0.4)
+           + amp3 * Math.cos(freq3 * Math.PI * (nx - ny) - 0.5);
+
+  // Edge clamping: reduce warp near borders
+  const edgeFade = Math.min(nx, 1-nx, ny, 1-ny) * 8;
+  const fade = Math.min(1, edgeFade);
+
+  return {
+    x: bx + dx * fade,
+    y: by + dy * fade
+  };
+}
+
+// Precompute all 9x9 corner positions
+const corners = [];
+for (let r = 0; r <= N; r++) {
+  corners[r] = [];
+  for (let c = 0; c <= N; c++) {
+    corners[r][c] = warpPoint(c, r);
+  }
+}
+
+// Cell center = average of 4 corners
+function cellCenter(col, row) {
+  const tl = corners[row][col];
+  const tr = corners[row][col+1];
+  const bl = corners[row+1][col];
+  const br = corners[row+1][col+1];
+  return {
+    x: (tl.x + tr.x + bl.x + br.x) / 4,
+    y: (tl.y + tr.y + bl.y + br.y) / 4
+  };
+}
+
+// ─── RENDER BOARD SVG ─────────────────────────────────────────────────────────
+function buildBoard() {
+  const svg = document.getElementById('board-svg');
+  let paths = '';
+
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      const tl = corners[r][c];
+      const tr = corners[r][c+1];
+      const br = corners[r+1][c+1];
+      const bl = corners[r+1][c];
+
+      // Checkerboard: white squares are (r+c) even
+      const isWhite = (r + c) % 2 === 0;
+      const fill = isWhite ? '#ffffff' : '#cc1111';
+
+      paths += `<path d="M${tl.x},${tl.y} L${tr.x},${tr.y} L${br.x},${br.y} L${bl.x},${bl.y} Z" fill="${fill}" stroke="#aa0000" stroke-width="0.5"/>`;
+    }
+  }
+
+  // Border
+  const p0 = corners[0][0], p1 = corners[0][N], p2 = corners[N][N], p3 = corners[N][0];
+  paths += `<path d="M${p0.x},${p0.y} L${p1.x},${p1.y} L${p2.x},${p2.y} L${p3.x},${p3.y} Z" fill="none" stroke="#880000" stroke-width="2"/>`;
+
+  svg.innerHTML = paths;
+}
+
+// ─── HIT TEST: which cell was clicked? ────────────────────────────────────────
+function pointInQuad(px, py, tl, tr, br, bl) {
+  function cross(ax, ay, bx, by) { return ax*by - ay*bx; }
+  function side(p1, p2) { return cross(p2.x-p1.x, p2.y-p1.y, px-p1.x, py-p1.y); }
+  const s1 = side(tl, tr), s2 = side(tr, br), s3 = side(br, bl), s4 = side(bl, tl);
+  return (s1 >= 0 && s2 >= 0 && s3 >= 0 && s4 >= 0) ||
+         (s1 <= 0 && s2 <= 0 && s3 <= 0 && s4 <= 0);
+}
+
+function getCellAt(px, py) {
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      if (pointInQuad(px, py, corners[r][c], corners[r][c+1], corners[r+1][c+1], corners[r+1][c])) {
+        return { col: c, row: r };
+      }
+    }
+  }
+  return null;
+}
+
+// ─── CHESS LOGIC ──────────────────────────────────────────────────────────────
+// Board: 8x8 array. Each cell: null or { color:'w'|'b', type:'p'|'r'|'n'|'b'|'q'|'k' }
+// row 0 = rank 8 (black back row), row 7 = rank 1 (white back row)
+
+let board, turn, selected, highlights, capturedW, capturedB, gameOver;
+let enPassantTarget; // {row, col} or null
+let castlingRights; // {wK, wQ, bK, bQ}
+
+const PIECES = {
+  'wk': '♔', 'wq': '♕', 'wr': '♖', 'wb': '♗', 'wn': '♘', 'wp': '♙',
+  'bk': '♚', 'bq': '♛', 'br': '♜', 'bb': '♝', 'bn': '♞', 'bp': '♟'
+};
+
+function resetGame() {
+  board = Array.from({length:8}, () => Array(8).fill(null));
+  // Black pieces row 0
+  const backRow = ['r','n','b','q','k','b','n','r'];
+  for (let c = 0; c < 8; c++) {
+    board[0][c] = { color:'b', type: backRow[c] };
+    board[1][c] = { color:'b', type:'p' };
+    board[6][c] = { color:'w', type:'p' };
+    board[7][c] = { color:'w', type: backRow[c] };
+  }
+  turn = 'w';
+  selected = null;
+  highlights = [];
+  capturedW = [];
+  capturedB = [];
+  gameOver = false;
+  enPassantTarget = null;
+  castlingRights = { wK:true, wQ:true, bK:true, bQ:true };
+  updateStatus();
+  render();
+}
+
+function inBounds(r, c) { return r >= 0 && r < 8 && c >= 0 && c < 8; }
+
+function isEnemy(piece, color) { return piece && piece.color !== color; }
+
+// Get raw moves (without check validation)
+function rawMoves(r, c, brd, epTarget, castle) {
+  const piece = brd[r][c];
+  if (!piece) return [];
+  const { color, type } = piece;
+  const moves = [];
+  const dir = color === 'w' ? -1 : 1;
+
+  const add = (nr, nc, special) => {
+    if (inBounds(nr, nc)) moves.push({ r: nr, c: nc, special });
+  };
+
+  if (type === 'p') {
+    // Forward
+    if (!brd[r+dir]?.[c]) {
+      add(r+dir, c);
+      // Double push from starting rank
+      const startRank = color === 'w' ? 6 : 1;
+      if (r === startRank && !brd[r+2*dir]?.[c]) add(r+2*dir, c, 'double');
+    }
+    // Captures
+    for (const dc of [-1, 1]) {
+      const nr = r+dir, nc = c+dc;
+      if (inBounds(nr, nc)) {
+        if (brd[nr][nc] && brd[nr][nc].color !== color) add(nr, nc);
+        else if (epTarget && epTarget.row === nr && epTarget.col === nc) add(nr, nc, 'ep');
+      }
+    }
+  }
+
+  if (type === 'n') {
+    for (const [dr,dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]) {
+      const nr = r+dr, nc = c+dc;
+      if (inBounds(nr, nc) && brd[nr][nc]?.color !== color) add(nr, nc);
+    }
+  }
+
+  const slide = (dirs) => {
+    for (const [dr,dc] of dirs) {
+      let nr = r+dr, nc = c+dc;
+      while (inBounds(nr, nc)) {
+        if (brd[nr][nc]) {
+          if (brd[nr][nc].color !== color) add(nr, nc);
+          break;
+        }
+        add(nr, nc);
+        nr += dr; nc += dc;
+      }
+    }
+  };
+
+  if (type === 'r') slide([[-1,0],[1,0],[0,-1],[0,1]]);
+  if (type === 'b') slide([[-1,-1],[-1,1],[1,-1],[1,1]]);
+  if (type === 'q') slide([[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]);
+
+  if (type === 'k') {
+    for (const [dr,dc] of [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]) {
+      const nr = r+dr, nc = c+dc;
+      if (inBounds(nr, nc) && brd[nr][nc]?.color !== color) add(nr, nc);
+    }
+    // Castling
+    if (castle) {
+      const rank = color === 'w' ? 7 : 0;
+      if (r === rank && c === 4) {
+        const kKey = color === 'w' ? 'wK' : 'bK';
+        const qKey = color === 'w' ? 'wQ' : 'bQ';
+        if (castle[kKey] && !brd[rank][5] && !brd[rank][6] && brd[rank][7]?.type === 'r')
+          add(rank, 6, 'castleK');
+        if (castle[qKey] && !brd[rank][3] && !brd[rank][2] && !brd[rank][1] && brd[rank][0]?.type === 'r')
+          add(rank, 2, 'castleQ');
+      }
+    }
+  }
+
+  return moves;
+}
+
+function findKing(color, brd) {
+  for (let r = 0; r < 8; r++)
+    for (let c = 0; c < 8; c++)
+      if (brd[r][c]?.color === color && brd[r][c]?.type === 'k') return {r, c};
+  return null;
+}
+
+function isAttacked(r, c, byColor, brd) {
+  for (let rr = 0; rr < 8; rr++)
+    for (let cc = 0; cc < 8; cc++)
+      if (brd[rr][cc]?.color === byColor) {
+        const mvs = rawMoves(rr, cc, brd, null, null);
+        if (mvs.some(m => m.r === r && m.c === c)) return true;
+      }
+  return false;
+}
+
+function applyMove(brd, from, to, special) {
+  const nb = brd.map(row => row.map(p => p ? {...p} : null));
+  const piece = nb[from.r][from.c];
+  nb[to.r][to.c] = piece;
+  nb[from.r][from.c] = null;
+
+  if (special === 'ep') {
+    const capRow = from.r; // captured pawn is on same row as moving pawn started
+    nb[capRow][to.c] = null;
+  }
+  if (special === 'castleK') {
+    const rank = to.r;
+    nb[rank][5] = nb[rank][7];
+    nb[rank][7] = null;
+  }
+  if (special === 'castleQ') {
+    const rank = to.r;
+    nb[rank][3] = nb[rank][0];
+    nb[rank][0] = null;
+  }
+  // Promotion: auto-queen
+  if (piece.type === 'p' && (to.r === 0 || to.r === 7)) {
+    nb[to.r][to.c] = { color: piece.color, type: 'q' };
+  }
+  return nb;
+}
+
+function legalMoves(r, c) {
+  const piece = board[r][c];
+  if (!piece || piece.color !== turn) return [];
+  const raw = rawMoves(r, c, board, enPassantTarget, castlingRights);
+  const enemy = turn === 'w' ? 'b' : 'w';
+
+  return raw.filter(mv => {
+    // For castling: check king doesn't pass through check
+    if (mv.special === 'castleK') {
+      const rank = r;
+      if (isAttacked(rank, 4, enemy, board)) return false;
+      if (isAttacked(rank, 5, enemy, board)) return false;
+      if (isAttacked(rank, 6, enemy, board)) return false;
+    }
+    if (mv.special === 'castleQ') {
+      const rank = r;
+      if (isAttacked(rank, 4, enemy, board)) return false;
+      if (isAttacked(rank, 3, enemy, board)) return false;
+      if (isAttacked(rank, 2, enemy, board)) return false;
+    }
+    const nb = applyMove(board, {r, c}, mv, mv.special);
+    const king = findKing(turn, nb);
+    return king && !isAttacked(king.r, king.c, enemy, nb);
+  });
+}
+
+function isInCheck(color) {
+  const enemy = color === 'w' ? 'b' : 'w';
+  const king = findKing(color, board);
+  return king && isAttacked(king.r, king.c, enemy, board);
+}
+
+function hasAnyLegalMove(color) {
+  for (let r = 0; r < 8; r++)
+    for (let c = 0; c < 8; c++)
+      if (board[r][c]?.color === color) {
+        const raw = rawMoves(r, c, board, enPassantTarget, castlingRights);
+        const enemy = color === 'w' ? 'b' : 'w';
+        for (const mv of raw) {
+          const nb = applyMove(board, {r, c}, mv, mv.special);
+          const king = findKing(color, nb);
+          if (king && !isAttacked(king.r, king.c, enemy, nb)) return true;
+        }
+      }
+  return false;
+}
+
+function doMove(fromR, fromC, toR, toC, special) {
+  const piece = board[fromR][fromC];
+  const captured = board[toR][toC];
+
+  // Track captures
+  if (captured) {
+    if (captured.color === 'w') capturedW.push(captured);
+    else capturedB.push(captured);
+  }
+  if (special === 'ep') {
+    const p = board[fromR][toC];
+    if (p) (p.color === 'w' ? capturedW : capturedB).push(p);
+  }
+
+  board = applyMove(board, {r:fromR, c:fromC}, {r:toR, c:toC}, special);
+
+  // Update castling rights
+  if (piece.type === 'k') {
+    if (piece.color === 'w') { castlingRights.wK = false; castlingRights.wQ = false; }
+    else { castlingRights.bK = false; castlingRights.bQ = false; }
+  }
+  if (piece.type === 'r') {
+    if (fromR === 7 && fromC === 7) castlingRights.wK = false;
+    if (fromR === 7 && fromC === 0) castlingRights.wQ = false;
+    if (fromR === 0 && fromC === 7) castlingRights.bK = false;
+    if (fromR === 0 && fromC === 0) castlingRights.bQ = false;
+  }
+
+  // En passant target
+  enPassantTarget = (special === 'double')
+    ? { row: fromR + (piece.color === 'w' ? -1 : 1), col: fromC }
+    : null;
+
+  turn = turn === 'w' ? 'b' : 'w';
+  selected = null;
+  highlights = [];
+
+  updateStatus();
+  render();
+}
+
+function updateStatus() {
+  const statusEl = document.getElementById('status');
+  const capW = document.getElementById('cap-white');
+  const capB = document.getElementById('cap-black');
+
+  const pieceStr = (arr) => arr.map(p => PIECES[p.color+p.type]).join('');
+  capW.textContent = pieceStr(capturedW);
+  capB.textContent = pieceStr(capturedB);
+
+  if (gameOver) return;
+
+  const enemy = turn === 'w' ? 'b' : 'w';
+  const inCheck = isInCheck(turn);
+  const hasMove = hasAnyLegalMove(turn);
+
+  if (!hasMove) {
+    gameOver = true;
+    if (inCheck) {
+      statusEl.innerHTML = `<span class="checkmate">¡Jaque mate! Ganan las ${enemy === 'w' ? 'blancas' : 'negras'}</span>`;
+    } else {
+      statusEl.innerHTML = `<span class="checkmate">¡Ahogado! Tablas.</span>`;
+    }
+    return;
+  }
+
+  const turnName = turn === 'w' ? 'Blancas' : 'Negras';
+  const cls = turn === 'w' ? 'white-turn' : 'black-turn';
+  if (inCheck) {
+    statusEl.innerHTML = `<span class="${cls}">${turnName}</span> <span class="check">— ¡Jaque!</span>`;
+  } else {
+    statusEl.innerHTML = `Turno: <span class="${cls}">${turnName}</span>`;
+  }
+}
+
+// ─── RENDER PIECES ────────────────────────────────────────────────────────────
+function render() {
+  const canvas = document.getElementById('pieces-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, SIZE, SIZE);
+
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const piece = board[r][c];
+      if (!piece) continue;
+      const center = cellCenter(c, r);
+      const symbol = PIECES[piece.color + piece.type];
+
+      ctx.save();
+      ctx.font = 'bold 42px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      if (piece.color === 'w') {
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#000';
+        ctx.shadowBlur = 4;
+        // Outline
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.strokeText(symbol, center.x, center.y + 1);
+        ctx.fillText(symbol, center.x, center.y + 1);
+      } else {
+        ctx.fillStyle = '#111111';
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 6;
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        ctx.strokeText(symbol, center.x, center.y + 1);
+        ctx.fillText(symbol, center.x, center.y + 1);
+      }
+      ctx.restore();
+    }
+  }
+
+  renderOverlay();
+}
+
+function renderOverlay() {
+  const canvas = document.getElementById('overlay-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, SIZE, SIZE);
+
+  // Draw highlight on selected cell
+  if (selected) {
+    const { r, c } = selected;
+    drawCellHighlight(ctx, r, c, 'rgba(255,255,0,0.45)');
+  }
+
+  // Draw legal move dots
+  for (const mv of highlights) {
+    const center = cellCenter(mv.c, mv.r);
+    const target = board[mv.r][mv.c];
+    if (target && target.color !== turn) {
+      // Capture highlight
+      drawCellHighlight(ctx, mv.r, mv.c, 'rgba(255,80,80,0.4)');
+    } else {
+      // Move dot
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, 9, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(80,255,80,0.6)';
+      ctx.fill();
+    }
+  }
+}
+
+function drawCellHighlight(ctx, r, c, color) {
+  const tl = corners[r][c];
+  const tr = corners[r][c+1];
+  const br = corners[r+1][c+1];
+  const bl = corners[r+1][c];
+  ctx.beginPath();
+  ctx.moveTo(tl.x, tl.y);
+  ctx.lineTo(tr.x, tr.y);
+  ctx.lineTo(br.x, br.y);
+  ctx.lineTo(bl.x, bl.y);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+// ─── INPUT ────────────────────────────────────────────────────────────────────
+document.getElementById('overlay-canvas').addEventListener('click', (e) => {
+  if (gameOver) return;
+  const rect = e.target.getBoundingClientRect();
+  const scaleX = SIZE / rect.width;
+  const scaleY = SIZE / rect.height;
+  const px = (e.clientX - rect.left) * scaleX;
+  const py = (e.clientY - rect.top) * scaleY;
+
+  const cell = getCellAt(px, py);
+  if (!cell) return;
+  const { col, row } = cell;
+
+  if (selected) {
+    // Check if clicking on a legal move destination
+    const mv = highlights.find(m => m.r === row && m.c === col);
+    if (mv) {
+      doMove(selected.r, selected.c, row, col, mv.special);
+      return;
+    }
+    // Clicking own piece: reselect
+    if (board[row][col]?.color === turn) {
+      selected = { r: row, c: col };
+      highlights = legalMoves(row, col);
+      renderOverlay();
+      return;
+    }
+    // Deselect
+    selected = null;
+    highlights = [];
+    renderOverlay();
+    return;
+  }
+
+  // Select
+  if (board[row][col]?.color === turn) {
+    selected = { r: row, c: col };
+    highlights = legalMoves(row, col);
+    renderOverlay();
+  }
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+buildBoard();
+resetGame();
+</script>
+</body>
+</html>
