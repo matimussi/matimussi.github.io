@@ -134,27 +134,31 @@ const SIZE = 640;
 const N = 8;
 
 function warpPoint(col, row) {
-  // Base grid position
-  const bx = (col / N) * SIZE;
-  const by = (row / N) * SIZE;
+  const nx = col / N;  // 0..1
+  const ny = row / N;  // 0..1
 
-  // Layered sine waves to create the swirling pattern
-  const freq1 = 1.5, freq2 = 2.3, freq3 = 0.8;
-  const amp1 = 28, amp2 = 18, amp3 = 22;
+  // The original board has large organic S-curves sweeping diagonally.
+  // We model this with two dominant low-frequency waves of high amplitude
+  // plus a secondary mid-frequency layer for the inner ripples.
 
-  const nx = col / N, ny = row / N;
+  // Primary wave: large S-curve sweeping across board (~1.5 cycles)
+  const dx =  72 * Math.sin(1.4 * Math.PI * ny - 0.6)
+            + 48 * Math.sin(1.1 * Math.PI * nx + 1.0)
+            + 30 * Math.cos(2.2 * Math.PI * ny - 0.2)
+            + 18 * Math.sin(2.8 * Math.PI * nx + 0.5);
 
-  const dx = amp1 * Math.sin(freq1 * Math.PI * ny + 0.3)
-           + amp2 * Math.cos(freq2 * Math.PI * nx - 0.8)
-           + amp3 * Math.sin(freq3 * Math.PI * (nx + ny) + 1.2);
+  const dy =  72 * Math.sin(1.4 * Math.PI * nx + 0.8)
+            + 48 * Math.sin(1.1 * Math.PI * ny - 0.5)
+            + 30 * Math.cos(2.2 * Math.PI * nx + 1.1)
+            + 18 * Math.sin(2.8 * Math.PI * ny - 0.9);
 
-  const dy = amp1 * Math.cos(freq1 * Math.PI * nx + 0.7)
-           + amp2 * Math.sin(freq2 * Math.PI * ny + 0.4)
-           + amp3 * Math.cos(freq3 * Math.PI * (nx - ny) - 0.5);
+  // Soft edge clamp so border squares don't fly off the canvas
+  const ex = Math.min(nx, 1 - nx) * 6;
+  const ey = Math.min(ny, 1 - ny) * 6;
+  const fade = Math.min(1, ex) * Math.min(1, ey);
 
-  // Edge clamping: reduce warp near borders
-  const edgeFade = Math.min(nx, 1-nx, ny, 1-ny) * 8;
-  const fade = Math.min(1, edgeFade);
+  const bx = nx * SIZE;
+  const by = ny * SIZE;
 
   return {
     x: bx + dx * fade,
