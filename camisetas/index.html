@@ -3,552 +3,573 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KIT BUILDER</title>
+  <title>KIT BUILDER — Tu camiseta. Nivel Premier League.</title>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --neon:        #00ff88;
+      --neon2:       #00d4ff;
+      --neon-glow:   0 0 12px rgba(0,255,136,.5), 0 0 30px rgba(0,255,136,.2);
+      --bg:          #05080f;
+      --bg-panel:    rgba(8,14,28,.85);
+      --border:      rgba(255,255,255,.07);
+      --border-neon: rgba(0,255,136,.3);
+      --text:        #dde8ff;
+      --text-muted:  rgba(180,200,240,.5);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* CANVAS BG */
+    #bg-canvas {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    }
+    .scanlines {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: repeating-linear-gradient(to bottom, transparent, transparent 2px, rgba(0,0,0,.06) 2px, rgba(0,0,0,.06) 4px);
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 60px;
+      background: rgba(5,8,15,.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 900;
+      color: var(--text); text-decoration: none; letter-spacing: 1px;
+    }
+    .nav-brand em { color: var(--neon); font-style: normal; }
+    .nav-brand-icon { color: var(--neon); }
+    .nav-links {
+      display: flex; align-items: center; gap: 4px;
+      list-style: none;
+    }
+    .nav-links a {
+      padding: 6px 14px; border-radius: 6px;
+      font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+      color: var(--text-muted); text-decoration: none;
+      transition: color .2s, background .2s;
+    }
+    .nav-links a:hover { color: var(--text); background: rgba(255,255,255,.05); }
+    .nav-links a.active { color: var(--neon); }
+    .nav-cta {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 20px; border-radius: 8px;
+      background: rgba(0,255,136,.1); border: 1px solid var(--border-neon);
+      color: var(--neon); font-family: 'Orbitron', monospace;
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      text-decoration: none; transition: all .2s;
+    }
+    .nav-cta:hover { background: rgba(0,255,136,.2); box-shadow: var(--neon-glow); }
+
+    /* WRAPPER */
+    .page { position: relative; z-index: 2; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 100px 40px 60px;
+      position: relative; overflow: hidden;
+    }
+    .hero-inner {
+      max-width: 1100px; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr;
+      align-items: center; gap: 60px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 14px; border-radius: 20px;
+      background: rgba(0,255,136,.08); border: 1px solid var(--border-neon);
+      font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--neon);
+      margin-bottom: 22px;
+    }
+    .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--neon); animation: pulse 2s infinite; }
+    .hero h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(32px, 5vw, 58px);
+      font-weight: 900; line-height: 1.1;
+      letter-spacing: -1px; margin-bottom: 20px;
+    }
+    .hero h1 em { color: var(--neon); font-style: normal; display: block; }
+    .hero p {
+      font-size: 18px; color: var(--text-muted);
+      line-height: 1.6; margin-bottom: 36px; max-width: 420px;
+    }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 32px; border-radius: 10px;
+      background: linear-gradient(135deg, #00ff88, #00c860);
+      color: #000; font-family: 'Orbitron', monospace;
+      font-size: 13px; font-weight: 700; letter-spacing: 2px;
+      text-decoration: none; transition: transform .2s, box-shadow .2s;
+      border: none; cursor: pointer;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,255,136,.45); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 10px;
+      border: 1px solid var(--border-neon);
+      color: var(--text); font-family: 'Orbitron', monospace;
+      font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+      text-decoration: none; transition: all .2s;
+      background: transparent;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.2); }
+
+    /* Hero jersey visual */
+    .hero-visual {
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .hero-jersey-wrap {
+      position: relative;
+      animation: float 4s ease-in-out infinite;
+    }
+    .hero-jersey-glow {
+      position: absolute; inset: -40px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,255,136,.18) 0%, transparent 70%);
+      filter: blur(40px); pointer-events: none;
+    }
+    .hero-jersey-wrap svg { width: 280px; height: auto; filter: drop-shadow(0 20px 50px rgba(0,0,0,.8)); }
+    .hero-stat-pills {
+      position: absolute; display: flex; flex-direction: column; gap: 10px;
+    }
+    .hero-stat-pills.left { left: -30px; top: 50%; transform: translateY(-50%); }
+    .hero-stat-pills.right { right: -30px; top: 50%; transform: translateY(-50%); }
+    .stat-pill {
+      background: var(--bg-panel); border: 1px solid var(--border-neon);
+      border-radius: 8px; padding: 8px 14px;
+      backdrop-filter: blur(12px);
+      white-space: nowrap;
+    }
+    .stat-pill-label { font-size: 8px; letter-spacing: 2px; color: var(--text-muted); font-family: 'Orbitron', monospace; }
+    .stat-pill-val { font-size: 15px; font-weight: 700; color: var(--neon); font-family: 'Orbitron', monospace; }
+
+    /* Scroll indicator */
+    .scroll-hint {
+      position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: var(--text-muted); font-size: 10px; letter-spacing: 2px;
+      animation: bounce 2s ease-in-out infinite;
+    }
+    @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+    /* ── HOW IT WORKS ── */
+    section {
+      padding: 90px 40px;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .section-tag {
+      font-size: 10px; font-weight: 700; letter-spacing: 4px;
+      color: var(--neon); font-family: 'Orbitron', monospace;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(24px, 4vw, 38px); font-weight: 900;
+      margin-bottom: 10px;
+    }
+    .section-sub {
+      color: var(--text-muted); font-size: 16px; margin-bottom: 52px;
+    }
+
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .step-card {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 14px; padding: 32px 28px;
+      backdrop-filter: blur(16px);
+      position: relative; overflow: hidden;
+      transition: border-color .3s, transform .3s;
+    }
+    .step-card:hover { border-color: var(--border-neon); transform: translateY(-4px); }
+    .step-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      opacity: 0; transition: opacity .3s;
+    }
+    .step-card:hover::before { opacity: 1; }
+    .step-num {
+      font-family: 'Orbitron', monospace; font-size: 11px;
+      color: var(--neon); letter-spacing: 2px; margin-bottom: 20px;
+    }
+    .step-icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      background: rgba(0,255,136,.08); border: 1px solid var(--border-neon);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--neon); margin-bottom: 20px;
+    }
+    .step-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .step-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+    .step-arrow {
+      position: absolute; top: 50%; right: -12px;
+      transform: translateY(-50%);
+      color: var(--border-neon); z-index: 10;
+    }
+    .steps-grid .step-card:last-child .step-arrow { display: none; }
+
+    /* ── SOCIAL PROOF ── */
+    .clubs-section { border-top: 1px solid var(--border); }
+    .clubs-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
+    }
+    .club-card {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      transition: border-color .2s, transform .2s;
+      cursor: default;
+    }
+    .club-card:hover { border-color: var(--border-neon); transform: translateY(-3px); }
+    .club-logo {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .club-name {
+      font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      color: var(--text-muted); text-align: center; font-family: 'Orbitron', monospace;
+    }
+
+    /* ── CTA FINAL ── */
+    .cta-section {
+      max-width: 1100px; margin: 0 auto;
+      padding: 0 40px 100px;
+    }
+    .cta-card {
+      background: var(--bg-panel); border: 1px solid var(--border-neon);
+      border-radius: 20px; padding: 64px 60px;
+      text-align: center; position: relative; overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+    .cta-glow {
+      position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+      width: 400px; height: 300px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,255,136,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-card h2 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(22px, 4vw, 38px); font-weight: 900;
+      margin-bottom: 14px;
+    }
+    .cta-card h2 em { color: var(--neon); font-style: normal; }
+    .cta-card p { color: var(--text-muted); font-size: 16px; margin-bottom: 36px; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      max-width: 1100px; margin: 0 auto;
+      color: var(--text-muted); font-size: 13px;
+    }
+    footer a { color: var(--neon); text-decoration: none; }
+
+    /* Dividers */
+    .divider {
+      height: 1px; background: var(--border);
+      max-width: 1100px; margin: 0 auto;
+    }
+
+    /* Animations shared */
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(0,255,136,.4); }
+      50%      { opacity:.7; box-shadow:0 0 0 5px rgba(0,255,136,0); }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 860px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hero-inner { grid-template-columns: 1fr; text-align: center; }
+      .hero { padding: 90px 20px 60px; }
+      .hero p { max-width: 100%; }
+      .hero-actions { justify-content: center; }
+      .hero-visual { margin-top: 20px; }
+      .hero-stat-pills { display: none; }
+      section { padding: 60px 20px; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .step-arrow { display: none; }
+      .clubs-grid { grid-template-columns: repeat(3, 1fr); }
+      .cta-card { padding: 40px 24px; }
+      .cta-section { padding: 0 20px 60px; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Ambient background -->
   <canvas id="bg-canvas"></canvas>
   <div class="scanlines"></div>
 
-  <div class="app">
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="nav-brand">
+      <svg class="nav-brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        <path d="M2 12h20"/>
+      </svg>
+      KIT<em>BUILDER</em>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="builder.html">Build Your Kit</a></li>
+      <li><a href="#how-it-works">C&#xF3;mo funciona</a></li>
+      <li><a href="#clubes">Clubes</a></li>
+    </ul>
+    <a href="builder.html" class="nav-cta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+      CREAR KIT
+    </a>
+  </nav>
 
-    <!-- ── HEADER ── -->
-    <header class="header">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            <path d="M2 12h20"/>
-          </svg>
+  <div class="page">
+
+    <!-- ── HERO ── -->
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="hero-text">
+          <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            DISE&#xD1;&#xC1; TU CAMISETA
+          </div>
+          <h1>
+            Tu club.
+            <em>Nivel Premier League.</em>
+          </h1>
+          <p>Dise&#xF1;&#xE1; tu kit. Volv&#xE9; legendario. Colores, escudo, n&#xFA;mero y estilo — todo en tiempo real.</p>
+          <div class="hero-actions">
+            <a href="builder.html" class="btn-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M12 5v14M5 12h14"/></svg>
+              BUILD YOUR KIT
+            </a>
+            <a href="#how-it-works" class="btn-secondary">
+              C&#xF3;mo funciona
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="m9 18 6-6-6-6"/></svg>
+            </a>
+          </div>
         </div>
-        <span class="brand-name">KIT<em>BUILDER</em></span>
-      </div>
 
-      <nav class="header-steps">
-        <div class="step active" data-step="1">
-          <div class="step-bubble"><span>01</span></div>
-          <span class="step-text">COLORES</span>
-        </div>
-        <div class="step-connector"></div>
-        <div class="step" data-step="2">
-          <div class="step-bubble"><span>02</span></div>
-          <span class="step-text">ESCUDO</span>
-        </div>
-        <div class="step-connector"></div>
-        <div class="step" data-step="3">
-          <div class="step-bubble"><span>03</span></div>
-          <span class="step-text">JUGADOR</span>
-        </div>
-        <div class="step-connector"></div>
-        <div class="step" data-step="4">
-          <div class="step-bubble"><span>04</span></div>
-          <span class="step-text">ESTILO</span>
-        </div>
-      </nav>
-
-      <div class="header-actions">
-        <button class="btn-ghost" id="btn-reset" title="Reiniciar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-            <path d="M3 3v5h5"/>
-          </svg>
-        </button>
-      </div>
-    </header>
-
-    <!-- ── MAIN ── -->
-    <main class="main">
-
-      <!-- LEFT: PREVIEW -->
-      <section class="panel-preview">
-        <div class="preview-hud">
-          <div class="hud-corner tl"></div>
-          <div class="hud-corner tr"></div>
-          <div class="hud-corner bl"></div>
-          <div class="hud-corner br"></div>
-
-          <div class="hud-top-label">
-            <span class="dot pulse"></span>
-            VISTA EN VIVO
+        <div class="hero-visual">
+          <div class="hero-stat-pills left">
+            <div class="stat-pill">
+              <div class="stat-pill-label">COLORES</div>
+              <div class="stat-pill-val">&#x221E;</div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-pill-label">ESTILOS</div>
+              <div class="stat-pill-val">06</div>
+            </div>
           </div>
 
-          <div class="jersey-stage">
-            <!-- Ambient glow behind jersey -->
-            <div class="jersey-glow" id="jersey-glow"></div>
-
-            <!-- Jersey SVG -->
-            <svg id="jersey-svg" viewBox="0 0 340 370" xmlns="http://www.w3.org/2000/svg">
+          <div class="hero-jersey-wrap">
+            <div class="hero-jersey-glow"></div>
+            <svg viewBox="0 0 340 370" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <!-- Fabric texture filter -->
-                <filter id="fabric" x="-5%" y="-5%" width="110%" height="110%">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise"/>
-                  <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
-                  <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" result="blend"/>
-                  <feComposite in="blend" in2="SourceGraphic" operator="in"/>
-                </filter>
-                <!-- Shine gradient -->
-                <linearGradient id="grad-shine" x1="20%" y1="0%" x2="80%" y2="100%">
+                <linearGradient id="hs" x1="20%" y1="0%" x2="80%" y2="100%">
                   <stop offset="0%" stop-color="white" stop-opacity="0.18"/>
                   <stop offset="40%" stop-color="white" stop-opacity="0.04"/>
                   <stop offset="100%" stop-color="black" stop-opacity="0.15"/>
                 </linearGradient>
-                <!-- Shadow gradient -->
-                <linearGradient id="grad-shadow" x1="0%" y1="0%" x2="0%" y2="100%">
+                <linearGradient id="hsh" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stop-color="black" stop-opacity="0"/>
                   <stop offset="100%" stop-color="black" stop-opacity="0.4"/>
                 </linearGradient>
-                <!-- Sleeve shade -->
-                <linearGradient id="grad-sleeve-l" x1="100%" y1="0%" x2="0%" y2="100%">
+                <linearGradient id="hsl" x1="100%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stop-color="black" stop-opacity="0.1"/>
                   <stop offset="100%" stop-color="black" stop-opacity="0.35"/>
                 </linearGradient>
-                <linearGradient id="grad-sleeve-r" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="hsr" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stop-color="black" stop-opacity="0.1"/>
                   <stop offset="100%" stop-color="black" stop-opacity="0.35"/>
                 </linearGradient>
-                <!-- Clip for stripes/patterns -->
-                <clipPath id="clip-body">
+                <clipPath id="hclip">
                   <path d="M 95,68 L 42,105 L 58,136 L 95,118 L 95,300 L 245,300 L 245,118 L 282,136 L 298,105 L 245,68 Q 228,57 210,50 Q 198,82 170,88 Q 142,82 130,50 Q 112,57 95,68 Z"/>
                 </clipPath>
-                <clipPath id="clip-full">
-                  <path d="M 95,68 L 42,105 L 58,136 L 95,118 L 95,300 L 245,300 L 245,118 L 282,136 L 298,105 L 245,68 Q 228,57 210,50 Q 198,82 170,88 Q 142,82 130,50 Q 112,57 95,68 Z M 95,68 L 42,105 L 58,136 L 95,118 Z M 245,68 L 298,105 L 282,136 L 245,118 Z"/>
-                </clipPath>
               </defs>
-
-              <!-- Drop shadow -->
               <ellipse cx="170" cy="318" rx="90" ry="10" fill="rgba(0,0,0,0.5)"/>
-
-              <!-- ── BODY ── -->
-              <path id="j-body"
-                d="M 95,68 L 42,105 L 58,136 L 95,118 L 95,300 L 245,300 L 245,118 L 282,136 L 298,105 L 245,68 Q 228,57 210,50 Q 198,82 170,88 Q 142,82 130,50 Q 112,57 95,68 Z"
-                fill="#1a1a2e"/>
-
-              <!-- Pattern overlay (updated by JS) -->
-              <g id="j-pattern" clip-path="url(#clip-body)"></g>
-
-              <!-- Sleeve left -->
-              <path id="j-sleeve-l"
-                d="M 95,68 Q 112,57 130,50 L 95,118 L 58,136 L 42,105 Z"
-                fill="#1a1a2e"/>
-              <!-- Sleeve left shade -->
-              <path d="M 95,68 Q 112,57 130,50 L 95,118 L 58,136 L 42,105 Z"
-                fill="url(#grad-sleeve-l)" pointer-events="none"/>
-
-              <!-- Sleeve right -->
-              <path id="j-sleeve-r"
-                d="M 245,68 Q 228,57 210,50 L 245,118 L 282,136 L 298,105 Z"
-                fill="#1a1a2e"/>
-              <!-- Sleeve right shade -->
-              <path d="M 245,68 Q 228,57 210,50 L 245,118 L 282,136 L 298,105 Z"
-                fill="url(#grad-sleeve-r)" pointer-events="none"/>
-
-              <!-- Collar -->
-              <path id="j-collar"
-                d="M 130,50 Q 142,82 170,88 Q 198,82 210,50 Q 192,43 170,41 Q 148,43 130,50 Z"
-                fill="#111122"/>
-
-              <!-- Collar inner shadow -->
-              <path d="M 138,54 Q 150,78 170,83 Q 190,78 202,54 Q 186,49 170,47 Q 154,49 138,54 Z"
-                fill="rgba(0,0,0,0.3)" pointer-events="none"/>
-
-              <!-- Shoulder stitching lines -->
-              <path d="M 95,68 Q 112,57 130,50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="3,3"/>
-              <path d="M 245,68 Q 228,57 210,50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="3,3"/>
-              <!-- Side seam lines -->
-              <line x1="95" y1="118" x2="95" y2="300" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-              <line x1="245" y1="118" x2="245" y2="300" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-              <!-- Hem line -->
-              <line x1="95" y1="296" x2="245" y2="296" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-
-              <!-- Fabric shine overlay -->
-              <path d="M 95,68 L 42,105 L 58,136 L 95,118 L 95,300 L 245,300 L 245,118 L 282,136 L 298,105 L 245,68 Q 228,57 210,50 Q 198,82 170,88 Q 142,82 130,50 Q 112,57 95,68 Z"
-                fill="url(#grad-shine)" pointer-events="none"/>
-
-              <!-- Bottom shadow on body -->
-              <path d="M 95,240 L 95,300 L 245,300 L 245,240 Z"
-                fill="url(#grad-shadow)" pointer-events="none"/>
-
-              <!-- Badge group -->
-              <g id="j-badge" transform="translate(110, 125)">
-                <rect id="j-badge-bg" x="0" y="0" width="48" height="48" rx="8"
-                  fill="rgba(255,255,255,0.05)"
-                  stroke="rgba(255,255,255,0.12)" stroke-width="1.5" stroke-dasharray="4,3"/>
-                <text id="j-badge-placeholder" x="24" y="32" text-anchor="middle" font-size="22" fill="rgba(255,255,255,0.15)">&#x1F6E1;</text>
-                <image id="j-badge-img" x="0" y="0" width="48" height="48" href="" style="display:none" clip-path="url(#badge-rclip)"/>
-                <clipPath id="badge-rclip">
-                  <rect x="0" y="0" width="48" height="48" rx="8"/>
-                </clipPath>
+              <!-- Body: deep blue -->
+              <path d="M 95,68 L 42,105 L 58,136 L 95,118 L 95,300 L 245,300 L 245,118 L 282,136 L 298,105 L 245,68 Q 228,57 210,50 Q 198,82 170,88 Q 142,82 130,50 Q 112,57 95,68 Z" fill="#0a2d6e"/>
+              <!-- Sash pattern -->
+              <g clip-path="url(#hclip)">
+                <path d="M 95,140 L 245,68 L 245,115 L 95,187 Z" fill="#00ff88" opacity="0.35"/>
               </g>
-
+              <!-- Sleeves: neon green -->
+              <path d="M 95,68 Q 112,57 130,50 L 95,118 L 58,136 L 42,105 Z" fill="#00a859"/>
+              <path d="M 95,68 Q 112,57 130,50 L 95,118 L 58,136 L 42,105 Z" fill="url(#hsl)" pointer-events="none"/>
+              <path d="M 245,68 Q 228,57 210,50 L 245,118 L 282,136 L 298,105 Z" fill="#00a859"/>
+              <path d="M 245,68 Q 228,57 210,50 L 245,118 L 282,136 L 298,105 Z" fill="url(#hsr)" pointer-events="none"/>
+              <!-- Collar -->
+              <path d="M 130,50 Q 142,82 170,88 Q 198,82 210,50 Q 192,43 170,41 Q 148,43 130,50 Z" fill="#061a44"/>
+              <!-- Shine -->
+              <path d="M 95,68 L 42,105 L 58,136 L 95,118 L 95,300 L 245,300 L 245,118 L 282,136 L 298,105 L 245,68 Q 228,57 210,50 Q 198,82 170,88 Q 142,82 130,50 Q 112,57 95,68 Z" fill="url(#hs)" pointer-events="none"/>
+              <path d="M 95,240 L 95,300 L 245,300 L 245,240 Z" fill="url(#hsh)" pointer-events="none"/>
               <!-- Number -->
-              <text id="j-number" x="170" y="252"
-                text-anchor="middle"
-                font-family="Orbitron, monospace"
-                font-size="72" font-weight="900"
-                fill="white" opacity="0.92"
-                filter="url(#num-shadow)">99</text>
-              <defs>
-                <filter id="num-shadow">
-                  <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.6)"/>
-                </filter>
-              </defs>
-
-              <!-- Name -->
-              <text id="j-name" x="170" y="283"
-                text-anchor="middle"
-                font-family="Rajdhani, sans-serif"
-                font-size="19" font-weight="700"
-                letter-spacing="4"
-                fill="white" opacity="0.88">TU NOMBRE</text>
-
+              <text x="170" y="252" text-anchor="middle" font-family="Orbitron, monospace" font-size="72" font-weight="900" fill="white" opacity="0.92">10</text>
+              <text x="170" y="283" text-anchor="middle" font-family="Rajdhani, sans-serif" font-size="19" font-weight="700" letter-spacing="4" fill="white" opacity="0.88">MESSI</text>
             </svg>
           </div>
 
-          <div class="hud-bottom">
-            <div class="hud-stat">
-              <span class="hud-stat-label">COLOR</span>
-              <span class="hud-stat-value" id="stat-color">#1A1A2E</span>
+          <div class="hero-stat-pills right">
+            <div class="stat-pill">
+              <div class="stat-pill-label">TIEMPO REAL</div>
+              <div class="stat-pill-val">LIVE</div>
             </div>
-            <div class="hud-badge-step">
-              <div class="step-pip active" data-pip="1"></div>
-              <div class="step-pip" data-pip="2"></div>
-              <div class="step-pip" data-pip="3"></div>
-              <div class="step-pip" data-pip="4"></div>
-            </div>
-            <div class="hud-stat">
-              <span class="hud-stat-label">ESTILO</span>
-              <span class="hud-stat-value" id="stat-style">S&#xD3;LIDO</span>
+            <div class="stat-pill">
+              <div class="stat-pill-label">ESCUDOS</div>
+              <div class="stat-pill-val">SVG</div>
             </div>
           </div>
         </div>
-
-        <!-- CTA -->
-        <button class="btn-cta" id="btn-squad">
-          <div class="btn-cta-bg"></div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
-            <path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>
-          </svg>
-          ENVIAR AL EQUIPO
-        </button>
-      </section>
-
-      <!-- RIGHT: CONTROLS -->
-      <section class="panel-controls">
-
-        <!-- Tab bar -->
-        <div class="tabbar">
-          <button class="tabbar-btn active" data-tab="colors">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
-            COLORES
-          </button>
-          <button class="tabbar-btn" data-tab="badge">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            ESCUDO
-          </button>
-          <button class="tabbar-btn" data-tab="details">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            JUGADOR
-          </button>
-          <button class="tabbar-btn" data-tab="style">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-            ESTILO
-          </button>
-        </div>
-
-        <!-- ── TAB: COLORS ── -->
-        <div class="tab-pane active" id="pane-colors">
-
-          <div class="ctrl-block">
-            <div class="ctrl-label">COLOR DE CUERPO</div>
-            <div class="swatches-grid" id="sw-primary">
-              <div class="sw active" data-c="#1a1a2e" style="--c:#1a1a2e"></div>
-              <div class="sw" data-c="#0d1b4b" style="--c:#0d1b4b"></div>
-              <div class="sw" data-c="#0a2d6e" style="--c:#0a2d6e"></div>
-              <div class="sw" data-c="#00337c" style="--c:#00337c"></div>
-              <div class="sw" data-c="#003d1f" style="--c:#003d1f"></div>
-              <div class="sw" data-c="#6b0000" style="--c:#6b0000"></div>
-              <div class="sw" data-c="#3a0068" style="--c:#3a0068"></div>
-              <div class="sw" data-c="#1a1a1a" style="--c:#1a1a1a"></div>
-              <div class="sw" data-c="#2d2d2d" style="--c:#2d2d2d"></div>
-              <div class="sw" data-c="#f8f8f8" style="--c:#f8f8f8; border-color:rgba(0,0,0,0.15)"></div>
-              <div class="sw" data-c="#c8102e" style="--c:#c8102e"></div>
-              <div class="sw" data-c="#00a859" style="--c:#00a859"></div>
-              <div class="sw" data-c="#ffd700" style="--c:#ffd700"></div>
-              <div class="sw" data-c="#ff6700" style="--c:#ff6700"></div>
-              <div class="sw sw-custom" data-group="primary" title="Personalizado">
-                <input type="color" id="cp-primary" value="#1a1a2e">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
-              </div>
-            </div>
-          </div>
-
-          <div class="ctrl-block">
-            <div class="ctrl-label">COLOR DE MANGAS</div>
-            <div class="swatches-grid" id="sw-secondary">
-              <div class="sw active" data-c="#1a1a2e" style="--c:#1a1a2e"></div>
-              <div class="sw" data-c="#f8f8f8" style="--c:#f8f8f8; border-color:rgba(0,0,0,0.15)"></div>
-              <div class="sw" data-c="#c8102e" style="--c:#c8102e"></div>
-              <div class="sw" data-c="#ffd700" style="--c:#ffd700"></div>
-              <div class="sw" data-c="#00a859" style="--c:#00a859"></div>
-              <div class="sw" data-c="#0a2d6e" style="--c:#0a2d6e"></div>
-              <div class="sw" data-c="#00d4ff" style="--c:#00d4ff"></div>
-              <div class="sw" data-c="#ff6700" style="--c:#ff6700"></div>
-              <div class="sw" data-c="#3a0068" style="--c:#3a0068"></div>
-              <div class="sw" data-c="#2d2d2d" style="--c:#2d2d2d"></div>
-              <div class="sw sw-custom" data-group="secondary" title="Personalizado">
-                <input type="color" id="cp-secondary" value="#1a1a2e">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
-              </div>
-            </div>
-          </div>
-
-          <div class="ctrl-block">
-            <div class="ctrl-label">COLOR DE TEXTO</div>
-            <div class="swatches-grid" id="sw-text">
-              <div class="sw active" data-c="#ffffff" style="--c:#ffffff; border-color:rgba(0,0,0,0.1)"></div>
-              <div class="sw" data-c="#ffd700" style="--c:#ffd700"></div>
-              <div class="sw" data-c="#00ff88" style="--c:#00ff88"></div>
-              <div class="sw" data-c="#00d4ff" style="--c:#00d4ff"></div>
-              <div class="sw" data-c="#ff3366" style="--c:#ff3366"></div>
-              <div class="sw" data-c="#ff6700" style="--c:#ff6700"></div>
-              <div class="sw" data-c="#c8102e" style="--c:#c8102e"></div>
-              <div class="sw" data-c="#1a1a2e" style="--c:#1a1a2e"></div>
-              <div class="sw sw-custom" data-group="text" title="Personalizado">
-                <input type="color" id="cp-text" value="#ffffff">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- ── TAB: BADGE ── -->
-        <div class="tab-pane" id="pane-badge">
-
-          <div class="ctrl-block">
-            <div class="ctrl-label">SUBIR ESCUDO</div>
-            <div class="drop-zone" id="drop-zone">
-              <div class="drop-zone-inner" id="drop-inner">
-                <div class="drop-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                  </svg>
-                </div>
-                <p class="drop-title">Arrastr&#xE1; tu escudo aqu&#xED;</p>
-                <p class="drop-sub">PNG o SVG con fondo transparente &middot; M&#xE1;x 2MB</p>
-              </div>
-              <input type="file" id="badge-input" accept="image/*" style="display:none">
-            </div>
-            <button class="btn-outline" id="btn-upload-badge">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              SELECCIONAR ARCHIVO
-            </button>
-            <button class="btn-danger" id="btn-remove-badge" style="display:none">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              QUITAR ESCUDO
-            </button>
-          </div>
-
-          <div class="ctrl-block">
-            <div class="ctrl-label">POSICI&#xD3;N</div>
-            <div class="pos-grid">
-              <button class="pos-btn active" data-pos="left">&#x25C4; IZQ.</button>
-              <button class="pos-btn" data-pos="center">&#x25CF; CENTRO</button>
-              <button class="pos-btn" data-pos="right">DER. &#x25BA;</button>
-            </div>
-          </div>
-
-          <div class="ctrl-block">
-            <div class="ctrl-label">TAMA&#xD1;O DEL ESCUDO</div>
-            <div class="slider-row">
-              <input type="range" id="badge-size" class="hud-slider" min="30" max="70" value="48">
-              <span class="slider-val" id="badge-size-val">48</span>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- ── TAB: DETAILS ── -->
-        <div class="tab-pane" id="pane-details">
-
-          <div class="ctrl-block">
-            <div class="ctrl-label">NOMBRE DEL JUGADOR</div>
-            <input type="text" id="inp-name" class="hud-input" placeholder="APELLIDO" maxlength="12" autocomplete="off">
-            <div class="char-count"><span id="char-count">0</span>/12</div>
-          </div>
-
-          <div class="ctrl-block">
-            <div class="ctrl-label">N&#xDA;MERO</div>
-            <div class="number-row">
-              <button class="num-stepper" id="num-minus">&#x2212;</button>
-              <input type="number" id="inp-number" class="hud-input num-input" placeholder="10" min="1" max="99" value="">
-              <button class="num-stepper" id="num-plus">+</button>
-            </div>
-          </div>
-
-          <div class="ctrl-block">
-            <div class="ctrl-label">TIPOGRAF&#xCD;A</div>
-            <div class="font-grid">
-              <div class="font-opt active" data-font="Orbitron">
-                <span style="font-family:'Orbitron';font-size:22px;font-weight:900">99</span>
-                <small>ORBITRON</small>
-              </div>
-              <div class="font-opt" data-font="Rajdhani">
-                <span style="font-family:'Rajdhani';font-size:28px;font-weight:700">99</span>
-                <small>RAJDHANI</small>
-              </div>
-              <div class="font-opt" data-font="Impact">
-                <span style="font-family:'Impact';font-size:26px">99</span>
-                <small>IMPACT</small>
-              </div>
-              <div class="font-opt" data-font="Georgia">
-                <span style="font-family:'Georgia';font-size:24px;font-weight:700;font-style:italic">99</span>
-                <small>CLASSIC</small>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- ── TAB: STYLE ── -->
-        <div class="tab-pane" id="pane-style">
-
-          <div class="ctrl-block">
-            <div class="ctrl-label">DISE&#xD1;O DE CAMISETA</div>
-            <div class="style-grid">
-
-              <div class="style-card active" data-style="solid">
-                <div class="style-preview">
-                  <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-                    <path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/>
-                    <path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/>
-                    <path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/>
-                    <path d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="rgba(0,0,0,0.2)"/>
-                    <path d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="rgba(0,0,0,0.2)"/>
-                  </svg>
-                </div>
-                <span>S&#xD3;LIDO</span>
-              </div>
-
-              <div class="style-card" data-style="stripes-v">
-                <div class="style-preview">
-                  <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-                    <path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/>
-                    <g clip-path="url(#cs)">
-                      <rect x="30" y="8" width="9" height="70" fill="rgba(255,255,255,0.2)"/>
-                      <rect x="41" y="8" width="9" height="70" fill="rgba(255,255,255,0.2)"/>
-                    </g>
-                    <path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/>
-                    <path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/>
-                    <clipPath id="cs"><path d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z"/></clipPath>
-                  </svg>
-                </div>
-                <span>RAYAS V.</span>
-              </div>
-
-              <div class="style-card" data-style="stripes-h">
-                <div class="style-preview">
-                  <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-                    <path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/>
-                    <g clip-path="url(#csh)">
-                      <rect x="5" y="36" width="70" height="8" fill="rgba(255,255,255,0.2)"/>
-                      <rect x="5" y="52" width="70" height="8" fill="rgba(255,255,255,0.2)"/>
-                      <rect x="5" y="68" width="70" height="8" fill="rgba(255,255,255,0.2)"/>
-                    </g>
-                    <path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/>
-                    <path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/>
-                    <clipPath id="csh"><path d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z"/></clipPath>
-                  </svg>
-                </div>
-                <span>RAYAS H.</span>
-              </div>
-
-              <div class="style-card" data-style="diagonal">
-                <div class="style-preview">
-                  <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-                    <path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/>
-                    <g clip-path="url(#cd)">
-                      <path d="M22,16 L58,76 L40,76 L22,40 Z" fill="rgba(255,255,255,0.18)"/>
-                    </g>
-                    <path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/>
-                    <path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/>
-                    <clipPath id="cd"><path d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z"/></clipPath>
-                  </svg>
-                </div>
-                <span>DIAGONAL</span>
-              </div>
-
-              <div class="style-card" data-style="halves">
-                <div class="style-preview">
-                  <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-                    <path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/>
-                    <g clip-path="url(#ch)">
-                      <path d="M40,10 L58,16 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Z M40,24 L58,29 L58,76 L40,76 Z" fill="rgba(255,255,255,0.22)"/>
-                    </g>
-                    <path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/>
-                    <path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/>
-                    <clipPath id="ch"><path d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z"/></clipPath>
-                  </svg>
-                </div>
-                <span>MITADES</span>
-              </div>
-
-              <div class="style-card" data-style="sash">
-                <div class="style-preview">
-                  <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
-                    <path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/>
-                    <g clip-path="url(#csash)">
-                      <path d="M22,38 L58,20 L58,44 L22,62 Z" fill="rgba(255,255,255,0.22)"/>
-                    </g>
-                    <path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/>
-                    <path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/>
-                    <clipPath id="csash"><path d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z"/></clipPath>
-                  </svg>
-                </div>
-                <span>BANDA</span>
-              </div>
-
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Footer nav -->
-        <div class="panel-footer">
-          <button class="btn-step-prev" id="btn-prev">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="m15 18-6-6 6-6"/></svg>
-            ANTERIOR
-          </button>
-          <button class="btn-step-next" id="btn-next">
-            SIGUIENTE
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-        </div>
-
-      </section>
-    </main>
-  </div>
-
-  <!-- ── MODAL ── -->
-  <div class="modal-bg" id="modal" style="display:none">
-    <div class="modal-card">
-      <div class="modal-glow"></div>
-      <div class="modal-header">
-        <div class="modal-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="28" height="28"><path d="M20 6 9 17l-5-5"/></svg>
-        </div>
-        <h2>&#xA1;DISE&#xD1;O LISTO!</h2>
-        <p>Tu camiseta fue enviada al equipo.</p>
       </div>
-      <div class="modal-body" id="modal-body"></div>
-      <button class="btn-cta modal-cta" onclick="closeModal()">CERRAR</button>
+
+      <div class="scroll-hint">
+        <span>SCROLL</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="m9 18 6-6-6-6" transform="rotate(90 12 12)"/></svg>
+      </div>
     </div>
+
+    <!-- ── HOW IT WORKS ── -->
+    <div class="divider"></div>
+    <section id="how-it-works">
+      <div class="section-tag">PROCESO</div>
+      <h2 class="section-title">C&#xF3;mo funciona</h2>
+      <p class="section-sub">Tres pasos para tener tu camiseta perfecta.</p>
+      <div class="steps-grid">
+
+        <div class="step-card">
+          <div class="step-num">PASO 01</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+              <circle cx="13.5" cy="6.5" r="2.5"/><circle cx="6.5" cy="13.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+              <line x1="13.5" y1="9" x2="6.5" y2="11"/><line x1="13.5" y1="9" x2="17.5" y2="15"/>
+            </svg>
+          </div>
+          <h3>Eleg&#xED; colores y estilo</h3>
+          <p>Seleccion&#xE1; el color de cuerpo, mangas y texto. Elegí entre 6 estilos de kit: sólido, rayas, diagonal, banda y m&#xE1;s.</p>
+          <div class="step-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">PASO 02</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h3>Sub&#xED; tu escudo</h3>
+          <p>Arrastr&#xE1; o seleccion&#xE1; el logo de tu club en PNG o SVG. Ajust&#xE1; el tama&#xF1;o y la posici&#xF3;n dentro de la camiseta.</p>
+          <div class="step-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">PASO 03</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <h3>Personaliz&#xE1; al jugador</h3>
+          <p>Ingres&#xE1; el nombre y n&#xFA;mero. Eleg&#xED; la tipograf&#xED;a — Orbitron, Rajdhani, Impact o el cl&#xE1;sico italic. Vista en vivo instant&#xE1;nea.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── CLUBES ── -->
+    <div class="divider"></div>
+    <section id="clubes" class="clubs-section">
+      <div class="section-tag">COMUNIDAD</div>
+      <h2 class="section-title">Clubes que ya confiaron</h2>
+      <p class="section-sub">Equipos que dise&#xF1;aron su kit con nosotros.</p>
+      <div class="clubs-grid">
+        <div class="club-card"><div class="club-logo">&#x26BD;</div><div class="club-name">FC ATLAS</div></div>
+        <div class="club-card"><div class="club-logo">&#x1F6E1;</div><div class="club-name">GUARDIA FC</div></div>
+        <div class="club-card"><div class="club-logo">&#x2B50;</div><div class="club-name">ESTRELLAS SC</div></div>
+        <div class="club-card"><div class="club-logo">&#x1F525;</div><div class="club-name">FUEGO CF</div></div>
+        <div class="club-card"><div class="club-logo">&#x26A1;</div><div class="club-name">RAYO UT</div></div>
+        <div class="club-card"><div class="club-logo">&#x1F985;</div><div class="club-name">AGUILA FC</div></div>
+        <div class="club-card"><div class="club-logo">&#x1F43A;</div><div class="club-name">LOBOS AC</div></div>
+        <div class="club-card"><div class="club-logo">&#x1F434;</div><div class="club-name">POTROS SC</div></div>
+        <div class="club-card"><div class="club-logo">&#x1F9CA;</div><div class="club-name">ICE UNITED</div></div>
+        <div class="club-card"><div class="club-logo">&#x1F332;</div><div class="club-name">PINOS FC</div></div>
+      </div>
+    </section>
+
+    <!-- ── CTA FINAL ── -->
+    <div class="cta-section">
+      <div class="cta-card">
+        <div class="cta-glow"></div>
+        <h2>&#xBF;Listo para dise&#xF1;ar<br><em>tu camiseta?</em></h2>
+        <p>Entr&#xE1; al builder, dise&#xF1;&#xE1; tu kit y envi&#xE1;lo al equipo en minutos.</p>
+        <a href="builder.html" class="btn-primary" style="display:inline-flex">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M12 5v14M5 12h14"/></svg>
+          BUILD YOUR KIT
+        </a>
+      </div>
+    </div>
+
+    <footer>
+      <span>&#xA9; 2025 KitBuilder &mdash; Dise&#xF1;&#xE1; tu camiseta.</span>
+      <a href="builder.html">Ir al Builder &rarr;</a>
+    </footer>
+
   </div>
 
-  <script src="js/builder.js"></script>
+  <script>
+    // Background canvas
+    (function() {
+      const canvas = document.getElementById('bg-canvas');
+      const ctx = canvas.getContext('2d');
+      let W, H, particles = [];
+      function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+      function mkP() { return { x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.2+.3, vx:(Math.random()-.5)*.2, vy:(Math.random()-.5)*.2, a:Math.random() }; }
+      function init() { resize(); particles = Array.from({length:70}, mkP); }
+      function draw() {
+        ctx.clearRect(0,0,W,H);
+        ctx.strokeStyle='rgba(0,255,136,0.028)'; ctx.lineWidth=1;
+        for(let x=0;x<W;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+        for(let y=0;y<H;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+        particles.forEach(p=>{
+          p.x+=p.vx; p.y+=p.vy;
+          if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+          if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+          ctx.fillStyle=`rgba(0,212,255,${p.a*.35})`; ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize', resize);
+      init(); draw();
+    })();
+  </script>
 </body>
 </html>
