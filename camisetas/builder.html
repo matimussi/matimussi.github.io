@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KIT BUILDER</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+  <div class="scanlines"></div>
+
+  <div class="app">
+
+    <header class="header">
+      <div class="header-brand">
+        <a href="index.html" class="brand-back" title="Volver">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="m15 18-6-6 6-6"/></svg>
+        </a>
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            <path d="M2 12h20"/>
+          </svg>
+        </div>
+        <span class="brand-name">KIT<em>BUILDER</em></span>
+      </div>
+
+      <nav class="header-steps">
+        <div class="step active" data-step="1">
+          <div class="step-bubble"><span>01</span></div>
+          <span class="step-text">COLORES</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-step="2">
+          <div class="step-bubble"><span>02</span></div>
+          <span class="step-text">ESCUDO</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-step="3">
+          <div class="step-bubble"><span>03</span></div>
+          <span class="step-text">JUGADOR</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-step="4">
+          <div class="step-bubble"><span>04</span></div>
+          <span class="step-text">ESTILO</span>
+        </div>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn-ghost" id="btn-reset" title="Reiniciar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <section class="panel-preview">
+        <div class="preview-hud">
+          <div class="hud-corner tl"></div>
+          <div class="hud-corner tr"></div>
+          <div class="hud-corner bl"></div>
+          <div class="hud-corner br"></div>
+          <div class="hud-top-label">
+            <span class="dot pulse"></span>
+            VISTA EN VIVO
+          </div>
+          <div class="jersey-stage">
+            <div class="jersey-glow" id="jersey-glow"></div>
+            <svg id="jersey-svg" viewBox="0 0 340 370" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="fabric" x="-5%" y="-5%" width="110%" height="110%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise"/>
+                  <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
+                  <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" result="blend"/>
+                  <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+                </filter>
+                <linearGradient id="grad-shine" x1="20%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="white" stop-opacity="0.18"/>
+                  <stop offset="40%" stop-color="white" stop-opacity="0.04"/>
+                  <stop offset="100%" stop-color="black" stop-opacity="0.15"/>
+                </linearGradient>
+                <linearGradient id="grad-shadow" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="black" stop-opacity="0"/>
+                  <stop offset="100%" stop-color="black" stop-opacity="0.4"/>
+                </linearGradient>
+                <linearGradient id="grad-sleeve-l" x1="100%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="black" stop-opacity="0.1"/>
+                  <stop offset="100%" stop-color="black" stop-opacity="0.35"/>
+                </linearGradient>
+                <linearGradient id="grad-sleeve-r" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="black" stop-opacity="0.1"/>
+                  <stop offset="100%" stop-color="black" stop-opacity="0.35"/>
+                </linearGradient>
+                <clipPath id="clip-body">
+                  <path d="M 95,68 L 42,105 L 58,136 L 95,118 L 95,300 L 245,300 L 245,118 L 282,136 L 298,105 L 245,68 Q 228,57 210,50 Q 198,82 170,88 Q 142,82 130,50 Q 112,57 95,68 Z"/>
+                </clipPath>
+              </defs>
+              <ellipse cx="170" cy="318" rx="90" ry="10" fill="rgba(0,0,0,0.5)"/>
+              <path id="j-body" d="M 95,68 L 42,105 L 58,136 L 95,118 L 95,300 L 245,300 L 245,118 L 282,136 L 298,105 L 245,68 Q 228,57 210,50 Q 198,82 170,88 Q 142,82 130,50 Q 112,57 95,68 Z" fill="#1a1a2e"/>
+              <g id="j-pattern" clip-path="url(#clip-body)"></g>
+              <path id="j-sleeve-l" d="M 95,68 Q 112,57 130,50 L 95,118 L 58,136 L 42,105 Z" fill="#1a1a2e"/>
+              <path d="M 95,68 Q 112,57 130,50 L 95,118 L 58,136 L 42,105 Z" fill="url(#grad-sleeve-l)" pointer-events="none"/>
+              <path id="j-sleeve-r" d="M 245,68 Q 228,57 210,50 L 245,118 L 282,136 L 298,105 Z" fill="#1a1a2e"/>
+              <path d="M 245,68 Q 228,57 210,50 L 245,118 L 282,136 L 298,105 Z" fill="url(#grad-sleeve-r)" pointer-events="none"/>
+              <path id="j-collar" d="M 130,50 Q 142,82 170,88 Q 198,82 210,50 Q 192,43 170,41 Q 148,43 130,50 Z" fill="#111122"/>
+              <path d="M 138,54 Q 150,78 170,83 Q 190,78 202,54 Q 186,49 170,47 Q 154,49 138,54 Z" fill="rgba(0,0,0,0.3)" pointer-events="none"/>
+              <path d="M 95,68 Q 112,57 130,50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="3,3"/>
+              <path d="M 245,68 Q 228,57 210,50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="3,3"/>
+              <line x1="95" y1="118" x2="95" y2="300" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+              <line x1="245" y1="118" x2="245" y2="300" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+              <line x1="95" y1="296" x2="245" y2="296" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+              <path d="M 95,68 L 42,105 L 58,136 L 95,118 L 95,300 L 245,300 L 245,118 L 282,136 L 298,105 L 245,68 Q 228,57 210,50 Q 198,82 170,88 Q 142,82 130,50 Q 112,57 95,68 Z" fill="url(#grad-shine)" pointer-events="none"/>
+              <path d="M 95,240 L 95,300 L 245,300 L 245,240 Z" fill="url(#grad-shadow)" pointer-events="none"/>
+              <g id="j-badge" transform="translate(110, 125)">
+                <rect id="j-badge-bg" x="0" y="0" width="48" height="48" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <text id="j-badge-placeholder" x="24" y="32" text-anchor="middle" font-size="22" fill="rgba(255,255,255,0.15)">&#x1F6E1;</text>
+                <image id="j-badge-img" x="0" y="0" width="48" height="48" href="" style="display:none" clip-path="url(#badge-rclip)"/>
+                <clipPath id="badge-rclip"><rect x="0" y="0" width="48" height="48" rx="8"/></clipPath>
+              </g>
+              <text id="j-number" x="170" y="252" text-anchor="middle" font-family="Orbitron, monospace" font-size="72" font-weight="900" fill="white" opacity="0.92" filter="url(#num-shadow)">10</text>
+              <defs><filter id="num-shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.6)"/></filter></defs>
+              <text id="j-name" x="170" y="283" text-anchor="middle" font-family="Rajdhani, sans-serif" font-size="19" font-weight="700" letter-spacing="4" fill="white" opacity="0.88">TU NOMBRE</text>
+            </svg>
+          </div>
+          <div class="hud-bottom">
+            <div class="hud-stat"><span class="hud-stat-label">COLOR</span><span class="hud-stat-value" id="stat-color">#1A1A2E</span></div>
+            <div class="hud-badge-step">
+              <div class="step-pip active" data-pip="1"></div>
+              <div class="step-pip" data-pip="2"></div>
+              <div class="step-pip" data-pip="3"></div>
+              <div class="step-pip" data-pip="4"></div>
+            </div>
+            <div class="hud-stat"><span class="hud-stat-label">ESTILO</span><span class="hud-stat-value" id="stat-style">S&#xD3;LIDO</span></div>
+          </div>
+        </div>
+        <button class="btn-cta" id="btn-squad">
+          <div class="btn-cta-bg"></div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+          ENVIAR AL EQUIPO
+        </button>
+      </section>
+
+      <section class="panel-controls">
+        <div class="tabbar">
+          <button class="tabbar-btn active" data-tab="colors">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+            COLORES
+          </button>
+          <button class="tabbar-btn" data-tab="badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            ESCUDO
+          </button>
+          <button class="tabbar-btn" data-tab="details">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            JUGADOR
+          </button>
+          <button class="tabbar-btn" data-tab="style">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            ESTILO
+          </button>
+        </div>
+
+        <div class="tab-pane active" id="pane-colors">
+          <div class="ctrl-block">
+            <div class="ctrl-label">COLOR DE CUERPO</div>
+            <div class="swatches-grid" id="sw-primary">
+              <div class="sw active" data-c="#1a1a2e" style="--c:#1a1a2e"></div>
+              <div class="sw" data-c="#0d1b4b" style="--c:#0d1b4b"></div>
+              <div class="sw" data-c="#0a2d6e" style="--c:#0a2d6e"></div>
+              <div class="sw" data-c="#00337c" style="--c:#00337c"></div>
+              <div class="sw" data-c="#003d1f" style="--c:#003d1f"></div>
+              <div class="sw" data-c="#6b0000" style="--c:#6b0000"></div>
+              <div class="sw" data-c="#3a0068" style="--c:#3a0068"></div>
+              <div class="sw" data-c="#1a1a1a" style="--c:#1a1a1a"></div>
+              <div class="sw" data-c="#2d2d2d" style="--c:#2d2d2d"></div>
+              <div class="sw" data-c="#f8f8f8" style="--c:#f8f8f8; border-color:rgba(0,0,0,0.15)"></div>
+              <div class="sw" data-c="#c8102e" style="--c:#c8102e"></div>
+              <div class="sw" data-c="#00a859" style="--c:#00a859"></div>
+              <div class="sw" data-c="#ffd700" style="--c:#ffd700"></div>
+              <div class="sw" data-c="#ff6700" style="--c:#ff6700"></div>
+              <div class="sw sw-custom" data-group="primary" title="Personalizado">
+                <input type="color" id="cp-primary" value="#1a1a2e">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">COLOR DE MANGAS</div>
+            <div class="swatches-grid" id="sw-secondary">
+              <div class="sw active" data-c="#1a1a2e" style="--c:#1a1a2e"></div>
+              <div class="sw" data-c="#f8f8f8" style="--c:#f8f8f8; border-color:rgba(0,0,0,0.15)"></div>
+              <div class="sw" data-c="#c8102e" style="--c:#c8102e"></div>
+              <div class="sw" data-c="#ffd700" style="--c:#ffd700"></div>
+              <div class="sw" data-c="#00a859" style="--c:#00a859"></div>
+              <div class="sw" data-c="#0a2d6e" style="--c:#0a2d6e"></div>
+              <div class="sw" data-c="#00d4ff" style="--c:#00d4ff"></div>
+              <div class="sw" data-c="#ff6700" style="--c:#ff6700"></div>
+              <div class="sw" data-c="#3a0068" style="--c:#3a0068"></div>
+              <div class="sw" data-c="#2d2d2d" style="--c:#2d2d2d"></div>
+              <div class="sw sw-custom" data-group="secondary" title="Personalizado">
+                <input type="color" id="cp-secondary" value="#1a1a2e">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">COLOR DE TEXTO</div>
+            <div class="swatches-grid" id="sw-text">
+              <div class="sw active" data-c="#ffffff" style="--c:#ffffff; border-color:rgba(0,0,0,0.1)"></div>
+              <div class="sw" data-c="#ffd700" style="--c:#ffd700"></div>
+              <div class="sw" data-c="#00ff88" style="--c:#00ff88"></div>
+              <div class="sw" data-c="#00d4ff" style="--c:#00d4ff"></div>
+              <div class="sw" data-c="#ff3366" style="--c:#ff3366"></div>
+              <div class="sw" data-c="#ff6700" style="--c:#ff6700"></div>
+              <div class="sw" data-c="#c8102e" style="--c:#c8102e"></div>
+              <div class="sw" data-c="#1a1a2e" style="--c:#1a1a2e"></div>
+              <div class="sw sw-custom" data-group="text" title="Personalizado">
+                <input type="color" id="cp-text" value="#ffffff">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="pane-badge">
+          <div class="ctrl-block">
+            <div class="ctrl-label">SUBIR ESCUDO</div>
+            <div class="drop-zone" id="drop-zone">
+              <div class="drop-zone-inner" id="drop-inner">
+                <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                <p class="drop-title">Arrastr&#xE1; tu escudo aqu&#xED;</p>
+                <p class="drop-sub">PNG o SVG con fondo transparente &middot; M&#xE1;x 2MB</p>
+              </div>
+              <input type="file" id="badge-input" accept="image/*" style="display:none">
+            </div>
+            <button class="btn-outline" id="btn-upload-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              SELECCIONAR ARCHIVO
+            </button>
+            <button class="btn-danger" id="btn-remove-badge" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              QUITAR ESCUDO
+            </button>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">POSICI&#xD3;N</div>
+            <div class="pos-grid">
+              <button class="pos-btn active" data-pos="left">&#x25C4; IZQ.</button>
+              <button class="pos-btn" data-pos="center">&#x25CF; CENTRO</button>
+              <button class="pos-btn" data-pos="right">DER. &#x25BA;</button>
+            </div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">TAMA&#xD1;O DEL ESCUDO</div>
+            <div class="slider-row">
+              <input type="range" id="badge-size" class="hud-slider" min="30" max="70" value="48">
+              <span class="slider-val" id="badge-size-val">48</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="pane-details">
+          <div class="ctrl-block">
+            <div class="ctrl-label">NOMBRE DEL JUGADOR</div>
+            <input type="text" id="inp-name" class="hud-input" placeholder="APELLIDO" maxlength="12" autocomplete="off">
+            <div class="char-count"><span id="char-count">0</span>/12</div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">N&#xDA;MERO</div>
+            <div class="number-row">
+              <button class="num-stepper" id="num-minus">&#x2212;</button>
+              <input type="number" id="inp-number" class="hud-input num-input" placeholder="10" min="1" max="99" value="">
+              <button class="num-stepper" id="num-plus">+</button>
+            </div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">TIPOGRAF&#xCD;A</div>
+            <div class="font-grid">
+              <div class="font-opt active" data-font="Orbitron"><span style="font-family:'Orbitron';font-size:22px;font-weight:900">99</span><small>ORBITRON</small></div>
+              <div class="font-opt" data-font="Rajdhani"><span style="font-family:'Rajdhani';font-size:28px;font-weight:700">99</span><small>RAJDHANI</small></div>
+              <div class="font-opt" data-font="Impact"><span style="font-family:'Impact';font-size:26px">99</span><small>IMPACT</small></div>
+              <div class="font-opt" data-font="Georgia"><span style="font-family:'Georgia';font-size:24px;font-weight:700;font-style:italic">99</span><small>CLASSIC</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="pane-style">
+          <div class="ctrl-block">
+            <div class="ctrl-label">DISE&#xD1;O DE CAMISETA</div>
+            <div class="style-grid">
+              <div class="style-card active" data-style="solid"><div class="style-preview"><svg viewBox="0 0 80 90"><path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/><path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/><path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/></svg></div><span>S&#xD3;LIDO</span></div>
+              <div class="style-card" data-style="stripes-v"><div class="style-preview"><svg viewBox="0 0 80 90"><path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/><g clip-path="url(#cs)"><rect x="30" y="8" width="9" height="70" fill="rgba(255,255,255,0.2)"/><rect x="41" y="8" width="9" height="70" fill="rgba(255,255,255,0.2)"/></g><path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/><path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/><clipPath id="cs"><path d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z"/></clipPath></svg></div><span>RAYAS V.</span></div>
+              <div class="style-card" data-style="stripes-h"><div class="style-preview"><svg viewBox="0 0 80 90"><path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/><g clip-path="url(#csh)"><rect x="5" y="36" width="70" height="8" fill="rgba(255,255,255,0.2)"/><rect x="5" y="52" width="70" height="8" fill="rgba(255,255,255,0.2)"/><rect x="5" y="68" width="70" height="8" fill="rgba(255,255,255,0.2)"/></g><path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/><path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/><clipPath id="csh"><path d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z"/></clipPath></svg></div><span>RAYAS H.</span></div>
+              <div class="style-card" data-style="diagonal"><div class="style-preview"><svg viewBox="0 0 80 90"><path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/><g clip-path="url(#cd)"><path d="M22,16 L58,76 L40,76 L22,40 Z" fill="rgba(255,255,255,0.18)"/></g><path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/><path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/><clipPath id="cd"><path d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z"/></clipPath></svg></div><span>DIAGONAL</span></div>
+              <div class="style-card" data-style="halves"><div class="style-preview"><svg viewBox="0 0 80 90"><path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/><g clip-path="url(#ch)"><path d="M40,10 L58,16 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Z M40,24 L58,29 L58,76 L40,76 Z" fill="rgba(255,255,255,0.22)"/></g><path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/><path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/><clipPath id="ch"><path d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z"/></clipPath></svg></div><span>MITADES</span></div>
+              <div class="style-card" data-style="sash"><div class="style-preview"><svg viewBox="0 0 80 90"><path class="sc-body" d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z" fill="#1a1a2e"/><g clip-path="url(#csash)"><path d="M22,38 L58,20 L58,44 L22,62 Z" fill="rgba(255,255,255,0.22)"/></g><path class="sc-sleeve-l" d="M22,16 Q28,12 32,10 L22,29 L13,34 L8,26 Z" fill="#1a1a2e"/><path class="sc-sleeve-r" d="M58,16 Q52,12 48,10 L58,29 L67,34 L72,26 Z" fill="#1a1a2e"/><clipPath id="csash"><path d="M22,16 L8,26 L13,34 L22,29 L22,76 L58,76 L58,29 L67,34 L72,26 L58,16 Q52,12 48,10 Q44,22 40,24 Q36,22 32,10 Q28,12 22,16 Z"/></clipPath></svg></div><span>BANDA</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-footer">
+          <button class="btn-step-prev" id="btn-prev">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="m15 18-6-6 6-6"/></svg>
+            ANTERIOR
+          </button>
+          <button class="btn-step-next" id="btn-next">
+            SIGUIENTE
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-bg" id="modal" style="display:none">
+    <div class="modal-card">
+      <div class="modal-glow"></div>
+      <div class="modal-header">
+        <div class="modal-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="28" height="28"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <h2>&#xA1;DISE&#xD1;O LISTO!</h2>
+        <p>Tu camiseta fue enviada al equipo.</p>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <button class="btn-cta modal-cta" onclick="closeModal()">CERRAR</button>
+    </div>
+  </div>
+
+  <script src="js/builder.js"></script>
+</body>
+</html>
