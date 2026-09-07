@@ -16,6 +16,8 @@
     --line: #c9d3d1;
     --good: #2f8f6e;
     --good-soft: #dcf0e8;
+    --warn: #a13f1f;
+    --warn-soft: #f7e0d3;
     --shadow: 0 1px 2px rgba(22,35,42,0.06), 0 8px 24px rgba(22,35,42,0.08);
     --font-display: "Big Shoulders Display", "Arial Narrow", sans-serif;
     --font-body: "IBM Plex Sans", system-ui, sans-serif;
@@ -36,6 +38,8 @@
       --line: #2b3c3e;
       --good: #57c99e;
       --good-soft: #163329;
+      --warn: #e2814f;
+      --warn-soft: #3a2416;
       --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
     }
   }
@@ -53,6 +57,8 @@
     --line: #2b3c3e;
     --good: #57c99e;
     --good-soft: #163329;
+    --warn: #e2814f;
+    --warn-soft: #3a2416;
     --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
   }
 
@@ -160,6 +166,32 @@
 
   .panel-body { padding: 20px; }
 
+  .step-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 24px 0 10px;
+  }
+  .step-eyebrow:first-child { margin-top: 0; }
+  .step-eyebrow .num {
+    font-weight: 700;
+    color: var(--surface);
+    background: var(--ink);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10.5px;
+    flex-shrink: 0;
+  }
+
   .field { margin-bottom: 16px; }
   .field:last-child { margin-bottom: 0; }
 
@@ -222,6 +254,16 @@
     cursor: pointer;
   }
   button.generate:hover { background: var(--accent-strong); }
+  button.generate:disabled {
+    background: var(--surface-2);
+    color: var(--ink-faint);
+    cursor: not-allowed;
+  }
+  button.generate.secondary {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+  button.generate.secondary:hover { background: var(--line); }
 
   .ticket {
     background: var(--surface);
@@ -325,6 +367,7 @@
   }
   a.btn.primary:hover, button.btn.primary:hover { background: var(--accent-strong); }
   button.btn.copied { background: var(--good); border-color: var(--good); color: #04231a; }
+  button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .message-box {
     background: var(--surface-2);
@@ -345,25 +388,20 @@
     margin-top: 10px;
   }
 
-  .steps {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 10px;
-  }
-  .steps li {
+  .verify-hint {
     display: flex;
-    gap: 10px;
-    font-size: 13.5px;
-    color: var(--ink-soft);
-  }
-  .steps li .n {
-    font-family: var(--font-mono);
-    font-weight: 600;
+    gap: 8px;
+    align-items: flex-start;
+    background: var(--warn-soft);
+    border: 1px solid var(--warn);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 12px;
+    font-size: 12.5px;
     color: var(--ink);
-    flex-shrink: 0;
+    line-height: 1.5;
   }
+  .verify-hint .mark { color: var(--warn); flex-shrink: 0; font-weight: 700; }
 
   .empty-note {
     padding: 40px 22px;
@@ -371,6 +409,71 @@
     color: var(--ink-faint);
     font-size: 14px;
   }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 480px) { .field-grid { grid-template-columns: 1fr; } }
+
+  .source-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    background: var(--surface-2);
+    border-radius: 999px;
+    padding: 4px 10px;
+    margin-bottom: 14px;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 18px 0;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+  .checkbox-row input { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; }
+
+  .breakdown {
+    display: grid;
+    gap: 8px;
+  }
+  .breakdown .line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+  .breakdown .line.total {
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+    margin-top: 2px;
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 15px;
+  }
+  .breakdown .val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  .moq-warn {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    background: var(--warn-soft);
+    border: 1px solid var(--warn);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 14px 0;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .moq-warn .mark { color: var(--warn); font-weight: 700; flex-shrink: 0; }
 
   .history {
     margin-top: 24px;
@@ -424,8 +527,10 @@
     font-size: 12.5px;
     color: var(--ink-faint);
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 6px;
   }
+  footer.note .line { display: flex; gap: 8px; }
 </style>
 
 <div class="wrap">
@@ -434,7 +539,7 @@
       <span class="eyebrow">Uso interno · pre-cotización</span>
       <h1>Cotizador de Proveedores</h1>
     </div>
-    <div class="masthead-meta">FLUJO SEMI-AUTOMÁTICO<br>búsqueda + mensaje de RFQ</div>
+    <div class="masthead-meta">FLUJO SEMI-AUTOMÁTICO<br>búsqueda → contacto → cotización final</div>
   </header>
 
   <div class="grid">
@@ -470,23 +575,61 @@
     </div>
 
     <div id="output-col">
+      <div class="step-eyebrow"><span class="num">2</span> Buscar y contactar al proveedor</div>
       <div class="ticket" id="ticket">
         <div class="empty-note">Completá el pedido a la izquierda y presioná «Generar» para armar el link de búsqueda y el mensaje para el proveedor.</div>
       </div>
 
-      <div class="panel" style="margin-top: 20px;">
-        <div class="panel-head">
-          <span class="num">2</span>
-          <h2>Cómo seguir</h2>
-        </div>
+      <div class="step-eyebrow"><span class="num">3</span> Respuesta del proveedor</div>
+      <div class="panel" id="reply-panel">
         <div class="panel-body">
-          <ol class="steps">
-            <li><span class="n">1.</span> Abrí el link de búsqueda y elegí 2 o 3 proveedores con buena calificación y varios años en la plataforma.</li>
-            <li><span class="n">2.</span> Entrá al chat de cada proveedor y pegá el mensaje generado (está en inglés, así responden más rápido).</li>
-            <li><span class="n">3.</span> Cuando respondan con precio y MOQ, comparás las cotizaciones y le pasás la mejor al cliente.</li>
-          </ol>
+          <div class="field">
+            <label for="reply">Pegá acá lo que te respondió el proveedor</label>
+            <textarea id="reply" style="min-height: 110px;" placeholder="Hi, thanks for your inquiry. MOQ is 300pcs, unit price $8.50/pc FOB Shenzhen. Lead time 20-25 days. Shipping to Argentina approx $450 for 500 units..."></textarea>
+          </div>
+          <button type="button" id="parse-btn" class="generate secondary">Interpretar respuesta</button>
+
+          <div id="extracted" hidden style="margin-top: 20px;">
+            <span class="source-tag" id="source-tag"></span>
+            <div class="field-grid">
+              <div class="field">
+                <label for="f-price">Precio unitario (USD)</label>
+                <input type="number" id="f-price" step="0.01" min="0">
+              </div>
+              <div class="field">
+                <label for="f-moq">MOQ del proveedor</label>
+                <input type="number" id="f-moq" min="0">
+              </div>
+              <div class="field">
+                <label for="f-lead">Tiempo de entrega</label>
+                <input type="text" id="f-lead" placeholder="20-25 días">
+              </div>
+              <div class="field">
+                <label for="f-shipping">Envío total (USD, opcional)</label>
+                <input type="number" id="f-shipping" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="field">
+              <label for="f-notes">Notas (muestra, condiciones, etc.)</label>
+              <textarea id="f-notes" style="min-height: 50px;"></textarea>
+            </div>
+            <div class="field">
+              <label for="margin">Margen a aplicar (%)</label>
+              <input type="number" id="margin" value="25" min="0" step="1">
+            </div>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="verified-check">
+              <span>Confirmo que este es un proveedor <strong>Verified Supplier</strong> / con <strong>Trade Assurance</strong> y que tiene reviews y pedidos anteriores en Alibaba — lo revisé en la página del proveedor.</span>
+            </label>
+
+            <button type="button" id="final-btn" class="generate" disabled>Generar cotización final →</button>
+          </div>
         </div>
       </div>
+
+      <div class="step-eyebrow" id="final-eyebrow" hidden><span class="num">4</span> Cotización final para el cliente</div>
+      <div class="ticket" id="final-ticket" hidden></div>
 
       <div class="history" id="history" hidden>
         <h3>Últimas cotizaciones armadas</h3>
@@ -496,8 +639,8 @@
   </div>
 
   <footer class="note">
-    <span>🧾</span>
-    <span>Este mensaje no se envía solo: el link y el texto quedan listos para que vos elijas al proveedor y confirmes el envío. Nada se contacta en automático.</span>
+    <div class="line"><span>🧾</span><span>Ningún mensaje se manda solo: vos elegís al proveedor, pegás el texto y confirmás el envío en cada paso.</span></div>
+    <div class="line"><span>🔎</span><span>La lectura de la respuesta del proveedor es automática pero aproximada (o asistida por Claude cuando está disponible) — revisá siempre los valores antes de generar la cotización final.</span></div>
   </footer>
 </div>
 
@@ -508,6 +651,16 @@
     var historyWrap = document.getElementById('history');
     var historyList = document.getElementById('history-list');
     var STORAGE_KEY = 'cotizador-historial';
+    var currentOrder = { product: '', qty: '', dest: '', specs: '' };
+
+    var replyBox = document.getElementById('reply');
+    var parseBtn = document.getElementById('parse-btn');
+    var extractedWrap = document.getElementById('extracted');
+    var sourceTag = document.getElementById('source-tag');
+    var verifiedCheck = document.getElementById('verified-check');
+    var finalBtn = document.getElementById('final-btn');
+    var finalEyebrow = document.getElementById('final-eyebrow');
+    var finalTicket = document.getElementById('final-ticket');
 
     function loadHistory() {
       try {
@@ -581,7 +734,35 @@
       );
     }
 
+    function setupCopyButton(button, getText) {
+      button.addEventListener('click', function () {
+        var reset = function (label, cls) {
+          button.textContent = label;
+          button.classList.toggle('copied', !!cls);
+        };
+        var original = button.textContent;
+        var done = function () {
+          reset('Copiado ✓', true);
+          setTimeout(function () { reset(original, false); }, 1800);
+        };
+        var fail = function () {
+          reset('No se pudo copiar — seleccioná manualmente', false);
+          setTimeout(function () { reset(original, false); }, 2400);
+        };
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(getText()).then(done, fail);
+          } else {
+            fail();
+          }
+        } catch (e) {
+          fail();
+        }
+      });
+    }
+
     function buildTicket(data) {
+      currentOrder = data;
       var searchUrl = 'https://www.alibaba.com/trade/search?SearchText=' + encodeURIComponent(data.product);
       var message = buildMessage(data);
 
@@ -604,7 +785,8 @@
         '<div class="search-link">' +
           '<code></code>' +
           '<a class="btn primary" target="_blank" rel="noopener">Abrir búsqueda ↗</a>' +
-        '</div>';
+        '</div>' +
+        '<div class="verify-hint"><span class="mark">✓</span><span>Una vez en Alibaba, activá los filtros <strong>Verified Supplier</strong> y <strong>Trade Assurance</strong>, y ordená por reviews: priorizá proveedores con calificación alta y pedidos ya entregados. No le escribas a uno sin reviews ni historial.</span></div>';
       searchSection.querySelector('code').textContent = searchUrl;
       var openLink = searchSection.querySelector('a.btn');
       openLink.href = searchUrl;
@@ -617,30 +799,7 @@
         '<div class="message-box"></div>' +
         '<div class="copy-row"><button type="button" class="btn">Copiar mensaje</button></div>';
       msgSection.querySelector('.message-box').textContent = message;
-      var copyBtn = msgSection.querySelector('button.btn');
-      copyBtn.addEventListener('click', function () {
-        var reset = function (label, cls) {
-          copyBtn.textContent = label;
-          copyBtn.classList.toggle('copied', !!cls);
-        };
-        var done = function () {
-          reset('Copiado ✓', true);
-          setTimeout(function () { reset('Copiar mensaje', false); }, 1800);
-        };
-        var fail = function () {
-          reset('No se pudo copiar — seleccioná el texto manualmente', false);
-          setTimeout(function () { reset('Copiar mensaje', false); }, 2400);
-        };
-        try {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(message).then(done, fail);
-          } else {
-            fail();
-          }
-        } catch (e) {
-          fail();
-        }
-      });
+      setupCopyButton(msgSection.querySelector('button.btn'), function () { return message; });
       ticket.appendChild(msgSection);
 
       var list = loadHistory();
@@ -648,6 +807,14 @@
       list.unshift(data);
       saveHistory(list);
       renderHistory();
+
+      extractedWrap.hidden = true;
+      finalEyebrow.hidden = true;
+      finalTicket.hidden = true;
+      finalTicket.innerHTML = '';
+      replyBox.value = '';
+      verifiedCheck.checked = false;
+      finalBtn.disabled = true;
     }
 
     form.addEventListener('submit', function (e) {
@@ -661,6 +828,164 @@
         specs: document.getElementById('specs').value.trim(),
       };
       buildTicket(data);
+    });
+
+    // --- Paso 3: interpretar la respuesta del proveedor ---
+
+    function heuristicParse(text) {
+      function get(re) {
+        var m = text.match(re);
+        return m ? m[1] : null;
+      }
+      var price =
+        get(/\$\s?(\d+(?:\.\d+)?)\s*\/\s*(?:pc|pcs|piece|pieces|unit|units)/i) ||
+        get(/(?:unit\s*price|price)[^\d$]{0,20}(?:US\$|USD|\$)\s?(\d+(?:\.\d+)?)/i) ||
+        get(/(?:US\$|USD|\$)\s?(\d+(?:\.\d+)?)/);
+      var moq =
+        get(/MOQ[^\d]{0,15}(\d[\d,]*)/i) ||
+        get(/minimum\s*order[^\d]{0,20}(\d[\d,]*)/i);
+      var lead = get(/(\d+\s*[-–~]{1,2}\s*\d+\s*days?)/i) || get(/(\d+\s*days?)/i);
+      var shipping = get(/(?:shipping|freight)[^\d$]{0,30}(?:US\$|USD|\$)\s?(\d+(?:\.\d+)?)/i);
+      var sampleLine = (text.match(/[^.\n]*sample[^.\n]*\.?/i) || [null])[0];
+
+      return {
+        unitPrice: price ? Number(price.replace(/,/g, '')) : null,
+        moq: moq ? Number(moq.replace(/,/g, '')) : null,
+        leadTime: lead,
+        shipping: shipping ? Number(shipping.replace(/,/g, '')) : null,
+        notes: sampleLine ? sampleLine.trim() : '',
+      };
+    }
+
+    async function getSample() {
+      try {
+        if (typeof window.claude === 'undefined' || !window.claude.use) return null;
+        return await window.claude.use('sample');
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function claudeParse(text) {
+      var sampleApi = await getSample();
+      if (!sampleApi) return null;
+      var prompt =
+        'A supplier on Alibaba replied to a request for a quote on "' + currentOrder.product +
+        '" (requested quantity: ' + (currentOrder.qty || 'unspecified') + ').\n\n' +
+        'Extract these fields from the reply below and answer with ONLY a JSON object with exactly ' +
+        'these keys: unitPrice (number in USD or null), moq (number or null), leadTime (short string or null), ' +
+        'shipping (total shipping cost in USD as a number, or null), notes (short string with any other relevant detail, or "").\n\n' +
+        'Supplier reply:\n"""\n' + text + '\n"""';
+      try {
+        return await sampleApi.json(prompt, { modelTier: 'quick', cache: false });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function fillExtracted(data, source) {
+      document.getElementById('f-price').value = data.unitPrice != null ? data.unitPrice : '';
+      document.getElementById('f-moq').value = data.moq != null ? data.moq : '';
+      document.getElementById('f-lead').value = data.leadTime || '';
+      document.getElementById('f-shipping').value = data.shipping != null ? data.shipping : '';
+      document.getElementById('f-notes').value = data.notes || '';
+      sourceTag.textContent = source === 'claude'
+        ? '✨ interpretado con Claude — revisá los valores'
+        : '🔎 estimación automática por texto — revisá y corregí los valores';
+      extractedWrap.hidden = false;
+      checkFinalReady();
+    }
+
+    parseBtn.addEventListener('click', async function () {
+      var text = replyBox.value.trim();
+      if (!text) return;
+      parseBtn.disabled = true;
+      parseBtn.textContent = 'Interpretando...';
+      var result = await claudeParse(text);
+      var source = 'claude';
+      if (!result) {
+        result = heuristicParse(text);
+        source = 'heuristic';
+      }
+      fillExtracted(result, source);
+      parseBtn.disabled = false;
+      parseBtn.textContent = 'Interpretar respuesta';
+    });
+
+    function checkFinalReady() {
+      var price = parseFloat(document.getElementById('f-price').value);
+      finalBtn.disabled = !(verifiedCheck.checked && price > 0);
+    }
+    verifiedCheck.addEventListener('change', checkFinalReady);
+    document.getElementById('f-price').addEventListener('input', checkFinalReady);
+
+    finalBtn.addEventListener('click', function () {
+      var price = parseFloat(document.getElementById('f-price').value) || 0;
+      var moq = parseFloat(document.getElementById('f-moq').value) || null;
+      var lead = document.getElementById('f-lead').value.trim();
+      var shipping = parseFloat(document.getElementById('f-shipping').value) || 0;
+      var notes = document.getElementById('f-notes').value.trim();
+      var margin = parseFloat(document.getElementById('margin').value) || 0;
+      var qty = Number(currentOrder.qty) || null;
+
+      var shippingPerUnit = shipping && qty ? shipping / qty : 0;
+      var costUnit = price + shippingPerUnit;
+      var finalUnit = costUnit * (1 + margin / 100);
+      var finalTotal = qty ? finalUnit * qty : null;
+
+      finalTicket.innerHTML = '';
+
+      var top = document.createElement('div');
+      top.className = 'ticket-top';
+      top.innerHTML =
+        '<div><span class="label">Cotización para</span><div class="product-name"></div></div>' +
+        '<div class="stamp">USD ' + finalUnit.toFixed(2) + ' / u.</div>';
+      top.querySelector('.product-name').textContent = currentOrder.product || 'producto consultado';
+      finalTicket.appendChild(top);
+      finalTicket.appendChild(Object.assign(document.createElement('div'), { className: 'perforation' }));
+
+      var breakdownSection = document.createElement('div');
+      breakdownSection.className = 'ticket-section';
+      var breakdownHtml =
+        '<h3>Cómo se arma el precio</h3>' +
+        '<div class="breakdown">' +
+        '<div class="line"><span>Costo proveedor (unidad)</span><span class="val">USD ' + price.toFixed(2) + '</span></div>' +
+        '<div class="line"><span>Envío prorrateado (unidad)</span><span class="val">USD ' + shippingPerUnit.toFixed(2) + '</span></div>' +
+        '<div class="line"><span>Margen aplicado</span><span class="val">' + margin + '%</span></div>' +
+        '<div class="line total"><span>Precio al cliente (unidad)</span><span class="val">USD ' + finalUnit.toFixed(2) + '</span></div>';
+      if (finalTotal) {
+        breakdownHtml += '<div class="line total"><span>Total (' + qty + ' u.)</span><span class="val">USD ' + finalTotal.toFixed(2) + '</span></div>';
+      }
+      breakdownHtml += '</div>';
+      if (moq && qty && qty < moq) {
+        breakdownHtml += '<div class="moq-warn"><span class="mark">⚠</span><span>El proveedor pide un mínimo (MOQ) de ' + moq + ' unidades, por encima de las ' + qty + ' pedidas. Vas a tener que pedir el mínimo, buscar otro proveedor, o avisarle al cliente.</span></div>';
+      }
+      breakdownSection.innerHTML = breakdownHtml;
+      finalTicket.appendChild(breakdownSection);
+
+      var qtyLine = qty ? ' (' + qty + ' unidades)' : '';
+      var totalLine = finalTotal ? '\n- Total estimado: USD ' + finalTotal.toFixed(2) : '';
+      var notesLine = notes ? '\n- Detalle: ' + notes : '';
+      var leadLine = lead ? lead : 'a confirmar con el proveedor';
+      var message =
+        'Hola! Te paso la cotización de "' + (currentOrder.product || 'tu pedido') + '"' + qtyLine + ':\n\n' +
+        '- Precio unitario: USD ' + finalUnit.toFixed(2) + totalLine + '\n' +
+        '- Tiempo de entrega estimado: ' + leadLine + notesLine + '\n\n' +
+        'Cualquier consulta quedo atento. Saludos!';
+
+      var msgSection = document.createElement('div');
+      msgSection.className = 'ticket-section';
+      msgSection.innerHTML =
+        '<h3>Mensaje para el cliente</h3>' +
+        '<div class="message-box"></div>' +
+        '<div class="copy-row"><button type="button" class="btn">Copiar mensaje</button></div>';
+      msgSection.querySelector('.message-box').textContent = message;
+      setupCopyButton(msgSection.querySelector('button.btn'), function () { return message; });
+      finalTicket.appendChild(msgSection);
+
+      finalEyebrow.hidden = false;
+      finalTicket.hidden = false;
+      finalTicket.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 
     renderHistory();
