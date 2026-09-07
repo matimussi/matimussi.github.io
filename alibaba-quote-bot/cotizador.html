@@ -1,0 +1,668 @@
+<title>Cotizador de Proveedores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef2f1;
+    --surface: #ffffff;
+    --surface-2: #e4eae8;
+    --ink: #16232a;
+    --ink-soft: #4b5b62;
+    --ink-faint: #7c8b8f;
+    --accent: #b8721f;
+    --accent-strong: #96591a;
+    --accent-soft: #f4e3c8;
+    --line: #c9d3d1;
+    --good: #2f8f6e;
+    --good-soft: #dcf0e8;
+    --shadow: 0 1px 2px rgba(22,35,42,0.06), 0 8px 24px rgba(22,35,42,0.08);
+    --font-display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+    --font-body: "IBM Plex Sans", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101a1c;
+      --surface: #172426;
+      --surface-2: #1e2d2f;
+      --ink: #edf2f1;
+      --ink-soft: #a3b4b4;
+      --ink-faint: #6f8283;
+      --accent: #e3a54f;
+      --accent-strong: #f0bb72;
+      --accent-soft: #3a2f1c;
+      --line: #2b3c3e;
+      --good: #57c99e;
+      --good-soft: #163329;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #101a1c;
+    --surface: #172426;
+    --surface-2: #1e2d2f;
+    --ink: #edf2f1;
+    --ink-soft: #a3b4b4;
+    --ink-faint: #6f8283;
+    --accent: #e3a54f;
+    --accent-strong: #f0bb72;
+    --accent-soft: #3a2f1c;
+    --line: #2b3c3e;
+    --good: #57c99e;
+    --good-soft: #163329;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.5;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  header.masthead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 18px;
+    margin-bottom: 32px;
+  }
+
+  .eyebrow {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(32px, 5vw, 46px);
+    letter-spacing: 0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .masthead-meta {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 380px) 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  @media (max-width: 760px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .panel-head .num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--surface);
+    background: var(--ink);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .panel-head h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+
+  .panel-body { padding: 20px; }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .field .hint {
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 4px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  textarea,
+  select {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 9px 11px;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  button:focus-visible,
+  a.btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  textarea { resize: vertical; min-height: 64px; font-family: var(--font-body); }
+
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  button.generate {
+    width: 100%;
+    margin-top: 4px;
+    background: var(--ink);
+    color: var(--surface);
+    border: none;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor: pointer;
+  }
+  button.generate:hover { background: var(--accent-strong); }
+
+  .ticket {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .ticket-top {
+    padding: 18px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .ticket-top .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .ticket-top .product-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 24px;
+    margin-top: 2px;
+  }
+
+  .ticket-top .stamp {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent-strong);
+    border: 1.5px solid var(--accent);
+    border-radius: 999px;
+    padding: 4px 12px;
+    white-space: nowrap;
+  }
+
+  .perforation {
+    height: 0;
+    border-top: 2px dashed var(--line);
+    margin: 0 0;
+    position: relative;
+  }
+
+  .ticket-section { padding: 18px 22px; }
+  .ticket-section + .ticket-section { border-top: 1px solid var(--line); }
+
+  .ticket-section h3 {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 10px;
+  }
+
+  .search-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    flex-wrap: wrap;
+  }
+
+  .search-link code {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-soft);
+    word-break: break-all;
+  }
+
+  a.btn, button.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 13.5px;
+    text-decoration: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  a.btn.primary, button.btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #241505;
+  }
+  a.btn.primary:hover, button.btn.primary:hover { background: var(--accent-strong); }
+  button.btn.copied { background: var(--good); border-color: var(--good); color: #04231a; }
+
+  .message-box {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    color: var(--ink);
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  .copy-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .steps li {
+    display: flex;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+  .steps li .n {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+
+  .empty-note {
+    padding: 40px 22px;
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 14px;
+  }
+
+  .history {
+    margin-top: 24px;
+  }
+  .history h3 {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 10px;
+  }
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .history-item {
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+  }
+  .history-item button {
+    background: none;
+    border: none;
+    color: var(--accent-strong);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+  .history-item .qty {
+    font-family: var(--font-mono);
+    color: var(--ink-faint);
+    font-size: 12px;
+  }
+
+  footer.note {
+    margin-top: 40px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    display: flex;
+    gap: 8px;
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div>
+      <span class="eyebrow">Uso interno · pre-cotización</span>
+      <h1>Cotizador de Proveedores</h1>
+    </div>
+    <div class="masthead-meta">FLUJO SEMI-AUTOMÁTICO<br>búsqueda + mensaje de RFQ</div>
+  </header>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="num">1</span>
+        <h2>Pedido del cliente</h2>
+      </div>
+      <div class="panel-body">
+        <form id="quote-form">
+          <div class="field">
+            <label for="product">Producto</label>
+            <input type="text" id="product" placeholder="ej. auriculares bluetooth deportivos" required>
+          </div>
+          <div class="row-2">
+            <div class="field">
+              <label for="qty">Cantidad</label>
+              <input type="number" id="qty" min="1" placeholder="500">
+            </div>
+            <div class="field">
+              <label for="dest">Destino</label>
+              <input type="text" id="dest" placeholder="Argentina">
+            </div>
+          </div>
+          <div class="field">
+            <label for="specs">Detalles (opcional)</label>
+            <textarea id="specs" placeholder="color negro, con estuche de carga, logo propio"></textarea>
+            <div class="hint">Color, material, tamaño, personalización — lo que el cliente haya pedido.</div>
+          </div>
+          <button type="submit" class="generate">Generar búsqueda y mensaje →</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="output-col">
+      <div class="ticket" id="ticket">
+        <div class="empty-note">Completá el pedido a la izquierda y presioná «Generar» para armar el link de búsqueda y el mensaje para el proveedor.</div>
+      </div>
+
+      <div class="panel" style="margin-top: 20px;">
+        <div class="panel-head">
+          <span class="num">2</span>
+          <h2>Cómo seguir</h2>
+        </div>
+        <div class="panel-body">
+          <ol class="steps">
+            <li><span class="n">1.</span> Abrí el link de búsqueda y elegí 2 o 3 proveedores con buena calificación y varios años en la plataforma.</li>
+            <li><span class="n">2.</span> Entrá al chat de cada proveedor y pegá el mensaje generado (está en inglés, así responden más rápido).</li>
+            <li><span class="n">3.</span> Cuando respondan con precio y MOQ, comparás las cotizaciones y le pasás la mejor al cliente.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="history" id="history" hidden>
+        <h3>Últimas cotizaciones armadas</h3>
+        <div class="history-list" id="history-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="note">
+    <span>🧾</span>
+    <span>Este mensaje no se envía solo: el link y el texto quedan listos para que vos elijas al proveedor y confirmes el envío. Nada se contacta en automático.</span>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var form = document.getElementById('quote-form');
+    var ticket = document.getElementById('ticket');
+    var historyWrap = document.getElementById('history');
+    var historyList = document.getElementById('history-list');
+    var STORAGE_KEY = 'cotizador-historial';
+
+    function loadHistory() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveHistory(list) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 6)));
+      } catch (e) {}
+    }
+
+    function renderHistory() {
+      var list = loadHistory();
+      if (!list.length) {
+        historyWrap.hidden = true;
+        return;
+      }
+      historyWrap.hidden = false;
+      historyList.innerHTML = '';
+      list.forEach(function (entry) {
+        var row = document.createElement('div');
+        row.className = 'history-item';
+        var left = document.createElement('span');
+        left.textContent = entry.product;
+        var right = document.createElement('span');
+        right.className = 'qty';
+        right.textContent = (entry.qty ? entry.qty + ' u. · ' : '') + entry.dest;
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = 'Reabrir';
+        btn.addEventListener('click', function () {
+          document.getElementById('product').value = entry.product;
+          document.getElementById('qty').value = entry.qty || '';
+          document.getElementById('dest').value = entry.dest || '';
+          document.getElementById('specs').value = entry.specs || '';
+          buildTicket(entry);
+        });
+        row.appendChild(left);
+        var rightWrap = document.createElement('span');
+        rightWrap.style.display = 'flex';
+        rightWrap.style.alignItems = 'center';
+        rightWrap.style.gap = '10px';
+        rightWrap.appendChild(right);
+        rightWrap.appendChild(btn);
+        row.appendChild(rightWrap);
+        historyList.appendChild(row);
+      });
+    }
+
+    function buildMessage(data) {
+      var qtyLine = data.qty
+        ? 'We are looking to order approximately ' + data.qty + ' units.'
+        : 'Could you share your price breaks for different order quantities?';
+      var specsLine = data.specs ? '\nSpecifications requested: ' + data.specs + '\n' : '\n';
+      return (
+        'Hello,\n\n' +
+        'I am interested in your "' + data.product + '".\n' +
+        qtyLine + specsLine +
+        '\nCould you please confirm:\n' +
+        '- Minimum order quantity (MOQ)\n' +
+        '- Unit price (FOB) at that quantity\n' +
+        '- Estimated production/lead time\n' +
+        '- Whether a sample is available before the full order\n' +
+        '- Shipping options and cost to ' + (data.dest || 'our country') + '\n\n' +
+        'Thank you, looking forward to your quotation.'
+      );
+    }
+
+    function buildTicket(data) {
+      var searchUrl = 'https://www.alibaba.com/trade/search?SearchText=' + encodeURIComponent(data.product);
+      var message = buildMessage(data);
+
+      ticket.innerHTML = '';
+
+      var top = document.createElement('div');
+      top.className = 'ticket-top';
+      top.innerHTML =
+        '<div><span class="label">Producto pedido</span><div class="product-name"></div></div>' +
+        '<div class="stamp"></div>';
+      top.querySelector('.product-name').textContent = data.product;
+      top.querySelector('.stamp').textContent = data.qty ? data.qty + ' unidades' : 'cantidad a definir';
+      ticket.appendChild(top);
+      ticket.appendChild(Object.assign(document.createElement('div'), { className: 'perforation' }));
+
+      var searchSection = document.createElement('div');
+      searchSection.className = 'ticket-section';
+      searchSection.innerHTML =
+        '<h3>Búsqueda en Alibaba</h3>' +
+        '<div class="search-link">' +
+          '<code></code>' +
+          '<a class="btn primary" target="_blank" rel="noopener">Abrir búsqueda ↗</a>' +
+        '</div>';
+      searchSection.querySelector('code').textContent = searchUrl;
+      var openLink = searchSection.querySelector('a.btn');
+      openLink.href = searchUrl;
+      ticket.appendChild(searchSection);
+
+      var msgSection = document.createElement('div');
+      msgSection.className = 'ticket-section';
+      msgSection.innerHTML =
+        '<h3>Mensaje para pegarle al proveedor</h3>' +
+        '<div class="message-box"></div>' +
+        '<div class="copy-row"><button type="button" class="btn">Copiar mensaje</button></div>';
+      msgSection.querySelector('.message-box').textContent = message;
+      var copyBtn = msgSection.querySelector('button.btn');
+      copyBtn.addEventListener('click', function () {
+        var reset = function (label, cls) {
+          copyBtn.textContent = label;
+          copyBtn.classList.toggle('copied', !!cls);
+        };
+        var done = function () {
+          reset('Copiado ✓', true);
+          setTimeout(function () { reset('Copiar mensaje', false); }, 1800);
+        };
+        var fail = function () {
+          reset('No se pudo copiar — seleccioná el texto manualmente', false);
+          setTimeout(function () { reset('Copiar mensaje', false); }, 2400);
+        };
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(message).then(done, fail);
+          } else {
+            fail();
+          }
+        } catch (e) {
+          fail();
+        }
+      });
+      ticket.appendChild(msgSection);
+
+      var list = loadHistory();
+      list = list.filter(function (e) { return e.product !== data.product || e.qty !== data.qty; });
+      list.unshift(data);
+      saveHistory(list);
+      renderHistory();
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var product = document.getElementById('product').value.trim();
+      if (!product) return;
+      var data = {
+        product: product,
+        qty: document.getElementById('qty').value.trim(),
+        dest: document.getElementById('dest').value.trim(),
+        specs: document.getElementById('specs').value.trim(),
+      };
+      buildTicket(data);
+    });
+
+    renderHistory();
+  })();
+</script>
