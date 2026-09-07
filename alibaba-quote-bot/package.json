@@ -1,0 +1,14 @@
+{
+  "name": "alibaba-quote-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prototipo: busca un producto en Alibaba (paginas publicas, sin login) y arma una cotizacion estimada (precio y MOQ) a partir de los listados.",
+  "type": "module",
+  "main": "search.js",
+  "scripts": {
+    "quote": "node search.js"
+  },
+  "dependencies": {
+    "playwright": "1.56.1"
+  }
+}
