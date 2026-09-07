@@ -1,0 +1,11 @@
+node_modules/
+.env
+auth-state.json
+state.json
+logs/*.jsonl
+orders/pending/*.json
+orders/awaiting-reply/*.json
+orders/done/*.json
+!orders/pending/.gitkeep
+!orders/awaiting-reply/.gitkeep
+!orders/done/.gitkeep

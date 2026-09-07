@@ -1,0 +1,17 @@
+{
+  "name": "alibaba-auto-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bot que se loguea con una cuenta real de Alibaba, busca proveedores verificados, les manda el pedido de cotizacion, lee las respuestas y arma la cotizacion final para el cliente. Pensado para correr en un servidor propio (NO en GitHub Pages).",
+  "type": "module",
+  "scripts": {
+    "login": "node src/login.js",
+    "add-order": "node src/add-order.js",
+    "run": "node src/bot.js run",
+    "check-replies": "node src/bot.js check-replies"
+  },
+  "dependencies": {
+    "playwright": "1.56.1",
+    "dotenv": "16.4.5"
+  }
+}
